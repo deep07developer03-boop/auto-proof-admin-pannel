@@ -1,0 +1,234 @@
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { Link } from "react-router-dom";
+import { Icon } from "@iconify/react";
+
+const BASE_URL = process.env.REACT_APP_BASE_URL;
+
+console.log("base url", process.env.REACT_APP_BASE_URL);
+
+const NotificationLayer = () => {
+  const [data, setData] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [checkType, setCheckType] = useState("");
+
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 1,
+  });
+
+  const getClientList = async (page = 1) => {
+    try {
+      const response = await axios.get(
+        `${BASE_URL}/super-admin-pannel/notifications`,
+        {
+          params: {
+            page,
+            limit: pagination.limit,
+            search: searchTerm || undefined,
+          },
+        }
+      );
+
+      console.log("data of notifications", response.data.data);
+      setData(response?.data?.data || []); // ✅ use "data"
+      setPagination(response?.data?.pagination || pagination);
+    } catch (err) {
+      console.error("Error fetching notifications:", err);
+    }
+  };
+
+  useEffect(() => {
+    getClientList(1);
+  }, []);
+
+  useEffect(() => {
+    getClientList(1);
+  }, [searchTerm, checkType]);
+
+  // handle page change
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= pagination.totalPages) {
+      getClientList(newPage);
+    }
+  };
+
+  function formatDateToDDMMYYYY(dateString) {
+    if (!dateString) return null;
+
+    const date = new Date(dateString);
+
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0"); // months are 0-based
+    const year = date.getFullYear();
+
+    return `${day}-${month}-${year}`;
+  }
+
+  return (
+    <div className="card h-100 p-0 radius-12">
+      <div className="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center flex-wrap gap-3 justify-content-between">
+        <div className="d-flex align-items-center flex-wrap gap-3">
+          <form className="navbar-search">
+            <input
+              type="search"
+              className="bg-base h-40-px w-auto"
+              placeholder="Search"
+              name="searchTerm"
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <Icon icon="ion:search-outline" className="icon" />
+          </form>
+          <Link to="/send-notification" className="btn btn-success">
+            Send Notifications To All User
+          </Link>
+          <Link
+            to="/send-notification-on-sheduled-date"
+            className="btn btn-success"
+          >
+            Sheduled Notification To Send
+          </Link>
+        </div>
+      </div>
+
+      <div className="card-body p-24">
+        <div className="table-responsive scroll-sm">
+          <table className="table bordered-table sm-table mb-0">
+            <thead>
+              <tr>
+                <th scope="col">Sr No</th>
+                <th scope="col">Type of Notification</th>
+                <th scope="col">Date</th>
+
+                <th scope="col">Content</th>
+                <th scope="col">Schedule</th>
+                <th scope="col">Send</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.length > 0 ? (
+                data &&
+                data.map((item, index) => {
+                  return (
+                    <tr key={index}>
+                      <td>{index + 1}</td>
+                      <td>{item.type}</td>
+                      <td>{formatDateToDDMMYYYY(item.createdAt)}</td>
+                      <td>{item.title}</td>
+                      <td>
+                        {item.scheduledAt
+                          ? formatDateToDDMMYYYY(item.scheduledAt)
+                          : "-"}
+                      </td>
+                      <td>{item.isSent ? "Yes" : "No"}</td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <tr>
+                  <td colSpan="12" className="text-center">
+                    No data found
+                  </td>
+                </tr>
+              )}
+              {/* {data?.map((item, index) => {
+                return (
+                  <tr key={index}>
+                    <td>{index + 1}</td>
+                    <td>{item.brand}</td>
+                    <td>{item.gasLevel}</td>
+                    <td>{item.gasType}</td>
+                    <td>{item.kmPerDay}</td>
+                    <td>{item.model}</td>
+                    <td>{item.mileage}</td>
+                    <td>{item.numberPlate}</td>
+                    <td>{item.priceTotal}</td>
+                    <td>{item.tyresCondition}</td>
+                    <td>{item.vehicleId}</td>
+                  </tr>
+                );
+              })} */}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Pagination */}
+        <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-24">
+          <span>
+            Showing{" "}
+            {Math.min(
+              (pagination.page - 1) * pagination.limit + 1,
+              pagination.total
+            )}{" "}
+            to {Math.min(pagination.page * pagination.limit, pagination.total)}{" "}
+            of {pagination.total} entries
+          </span>
+
+          <ul className="pagination d-flex flex-wrap align-items-center gap-2 justify-content-center">
+            <li
+              className={`page-item ${pagination.page === 1 ? "disabled" : ""}`}
+            >
+              <Link
+                to="#"
+                className="page-link bg-neutral-200 text-secondary-light fw-semibold radius-8 border-0 d-flex align-items-center justify-content-center h-32-px text-md"
+                onClick={() => handlePageChange(pagination.page - 1)}
+              >
+                <Icon icon="ep:d-arrow-left" />
+              </Link>
+            </li>
+
+            {Array.from({ length: pagination.totalPages }, (_, i) => (
+              <li key={i + 1} className="page-item">
+                <Link
+                  to="#"
+                  className={`page-link fw-semibold radius-8 border-0 d-flex align-items-center justify-content-center h-32-px w-32-px text-md ${
+                    pagination.page === i + 1
+                      ? "bg-primary-600 text-white"
+                      : "bg-neutral-200 text-secondary-light"
+                  }`}
+                  onClick={() => handlePageChange(i + 1)}
+                >
+                  {i + 1}
+                </Link>
+              </li>
+            ))}
+
+            <li
+              className={`page-item ${
+                pagination.page === pagination.totalPages ? "disabled" : ""
+              }`}
+            >
+              <Link
+                to="#"
+                className="page-link bg-neutral-200 text-secondary-light fw-semibold radius-8 border-0 d-flex align-items-center justify-content-center h-32-px text-md"
+                onClick={() => handlePageChange(pagination.page + 1)}
+              >
+                <Icon icon="ep:d-arrow-right" />
+              </Link>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default NotificationLayer;
+
+// ===================================
+
+// {
+//     "message": "Login successful.",
+//     "success": true,
+//     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjU4NDUxM2E0LWI2OTctNGRhMC1hZjc2LThjOTFlZGVlNGJhMiIsInJvbGUiOiJBRE1JTiIsImVtYWlsIjoicmlzaHVuZXdAeW9wbWFpbC5jb20iLCJpYXQiOjE3NTYzNzQxNzIsImV4cCI6MTc1ODEwMjE3Mn0.e756Z4TPsdfZ-zyQJAZRR6oeYksTBPOU3nT63NgQj8o",
+//     "user": {
+//         "userId": "584513a4-b697-4da0-af76-8c91edee4ba2",
+//         "role": "ADMIN",
+//         "email": "rishunew@yopmail.com",
+//         "firstName": "raman",
+//         "lastName": "kumar Singh"
+// test 1234
+//     }
+// }
