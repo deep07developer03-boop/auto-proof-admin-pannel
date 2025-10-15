@@ -9,6 +9,8 @@ const BASE_URL = process.env.REACT_APP_BASE_URL;
 console.log("base url", process.env.REACT_APP_BASE_URL);
 
 const CheckOutComp = () => {
+  const token = localStorage.getItem("token");
+
   const [data, setData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [checkType, setCheckType] = useState("");
@@ -25,9 +27,15 @@ const CheckOutComp = () => {
       const response = await axios.get(
         `${BASE_URL}/super-admin-pannel/check-out-inspections`,
         {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json", // ✅ correct for JSON body
+          },
+
           params: {
             page,
             limit: pagination.limit,
+            search: searchTerm || undefined,
             numberPlate: searchTerm || undefined, // backend expects numberPlate
             userType: userType || undefined, // backend expects userType
             checkType: checkType || undefined, // in case you want dynamic checkType
@@ -42,90 +50,16 @@ const CheckOutComp = () => {
     }
   };
 
-  // initial load
   useEffect(() => {
-    getClientList(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    getClientList(pagination.page, searchTerm);
+  }, [pagination.page, searchTerm]);
 
-  // trigger fetch when searchTerm or checkType changes
-  useEffect(() => {
-    getClientList(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm, checkType]);
-
-  // handle page change
-  const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= pagination.totalPages) {
-      getClientList(newPage);
+  // handle pagination click
+  const handlePageChange = (page) => {
+    if (page > 0 && page <= pagination.totalPages) {
+      setPagination((prev) => ({ ...prev, page }));
     }
   };
-
-  //   export default (sequelize, DataTypes) => {
-  //   const Company = sequelize.define(
-  //     "Company",
-  //     {
-  //       companyId: {
-  //         type: DataTypes.UUID,
-  //         primaryKey: true,
-  //         defaultValue: DataTypes.UUIDV4,
-  //       },
-  //       adminId: {
-  //         // adminId
-  //         type: DataTypes.UUID,
-  //         allowNull: false,
-  //         references: {
-  //           model: "Users",
-  //           key: "userId",
-  //         },
-  //       },
-  //       companyName: {
-  //         type: DataTypes.STRING,
-  //         allowNull: false,
-  //       },
-  //       website: {
-  //         type: DataTypes.STRING,
-  //         allowNull: false,
-  //         validate: {
-  //           isUrl: true,
-  //         },
-  //         unique: true,
-  //       },
-  //       VatNumber: {
-  //         type: DataTypes.STRING,
-  //         allowNull: false,
-  //         unique: true,
-  //       },
-  //       companyRegistrationNumber: {
-  //         type: DataTypes.STRING,
-  //         allowNull: false,
-  //         unique: true,
-  //       },
-  //       shareCapital: {
-  //         type: DataTypes.DECIMAL(15, 2),
-  //         allowNull: true,
-  //       },
-  //       termAndConditions: {
-  //         type: DataTypes.STRING,
-  //         allowNull: true,
-  //       },
-  //       companyPolicy: {
-  //         type: DataTypes.STRING,
-  //         allowNull: true,
-  //       },
-  //       companyLogo: {
-  //         type: DataTypes.STRING,
-  //         allowNull: true,
-  //       },
-  //       isActive: {
-  //         type: DataTypes.BOOLEAN,
-  //         defaultValue: true,
-  //       },
-  //     },
-  //     { timestamps: true }
-  //   );
-  //   return Company;
-  // };
 
   function formatDateToDDMMYYYY(dateString) {
     if (!dateString) return null;
@@ -162,9 +96,10 @@ const CheckOutComp = () => {
             <thead>
               <tr>
                 <th>Sr N°</th>
+                <th>Inspection Number</th>
                 <th>Number Plate</th>
                 <th>Date</th>
-                <th>Profile Image</th>
+                <th className="text-center">Profile Image</th>
                 <th>First Name</th>
                 <th>Last Name</th>
 
@@ -185,10 +120,14 @@ const CheckOutComp = () => {
                 data?.map((item, index) => {
                   return (
                     <tr>
-                      <td>{index + 1}</td>
-                      <td>{item.vehicle.numberPlate}</td>
-                      <td>{formatDateToDDMMYYYY(item.vehicle.createdAt)}</td>
                       <td>
+                        {(pagination.page - 1) * pagination.limit + index + 1}
+                      </td>
+                      <td>{item.inspectionNumber}</td>
+                      <td>{item.vehicle.numberPlate}</td>
+
+                      <td>{formatDateToDDMMYYYY(item.vehicle.createdAt)}</td>
+                      <td className="text-center">
                         {item.admin.profileImage ? (
                           ""
                         ) : (

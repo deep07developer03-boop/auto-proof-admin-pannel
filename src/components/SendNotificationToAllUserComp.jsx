@@ -7,6 +7,8 @@ const BASE_URL = process.env.REACT_APP_BASE_URL;
 console.log("base url", process.env.REACT_APP_BASE_URL);
 
 const SendNotificationToAllUserComp = () => {
+  const token = localStorage.getItem("token");
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     message: "",
@@ -37,17 +39,25 @@ const SendNotificationToAllUserComp = () => {
   // Handle submit
   const handleSubmit = (e) => {
     e.preventDefault();
+    setLoading(true);
     if (validate()) {
       console.log("Form submitted:", formData);
 
       axios
         .post(
           BASE_URL + "/super-admin-pannel/send-notification-to-all",
-          formData
+
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json", // ✅ correct for JSON body
+            },
+          }
         )
         .then((response) => {
           console.log("response", response);
-
+          setLoading(false);
           Swal.fire({
             title: "Thank You!",
             text: "Notification sent to all users successfully",
@@ -62,7 +72,7 @@ const SendNotificationToAllUserComp = () => {
         })
         .catch((error) => {
           console.log("error", error);
-
+          setLoading(false);
           Swal.fire({
             icon: "error",
             title: "Oops...",
@@ -147,6 +157,11 @@ const SendNotificationToAllUserComp = () => {
               {/* Submit button */}
               <div className="text-center">
                 <button type="submit" className="btn btn-primary px-5">
+                  {loading && (
+                    <div className="spinner-border" role="status">
+                      <span className="visually-hidden">Loading...</span>
+                    </div>
+                  )}{" "}
                   Send Notification
                 </button>
               </div>

@@ -1,4 +1,5 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import ProtectedRoute from "./components/ProtectedRoute";
 import HomePageOne from "./pages/HomePageOne";
 import HomePageTwo from "./pages/HomePageTwo";
 import HomePageThree from "./pages/HomePageThree";
@@ -41,80 +42,258 @@ import RentalByFleetSubscription from "./pages/RentalByFleetSubscription";
 import IncomeManagementBySubscription from "./pages/IncomeManagementBySubscription";
 import IncomeManagementByAddComp from "./components/IncomeManagementByAddComp";
 import IncomeManagementByAdd from "./pages/IncomeManagementByAdd";
+import PaymentTest from "./pages/PaymentTest";
+import PaymentSucces from "./pages/PaymentSucces";
+import PaymentCancel from "./pages/PaymentCancel";
+import ContactUs from "./pages/ContactUs";
 
 function App() {
   return (
     <BrowserRouter>
       <RouteScrollToTop />
       <Routes>
-        <Route exact path="/login" element={<Login />} />
-        <Route exact path="/" element={<HomePageTwo />} />
-        <Route exact path="/dashboard" element={<HomePageTwo />} />
-        <Route exact path="/users" element={<HomePageThree />} />
-        <Route exact path="/inspection" element={<HomePageFour />} />
-        <Route exact path="/clients" element={<HomePageFive />} />
-        <Route exact path="/vehicle" element={<HomePageSix />} />
-        <Route exact path="/companies" element={<HomePageSeven />} />
-        <Route exact path="/subscriptions" element={<HomePageEight />} />
-        <Route exact path="/advertisement" element={<HomePageNine />} />
-        <Route exact path="/notification" element={<NotificationPage />} />
+        {/* Public Route */}
+        <Route path="/login" element={<Login />} />
 
-        <Route exact path="/rental-feet" element={<RentalFleet />} />
-
+        {/* Protected Routes */}
         <Route
-          exact
+          path="/"
+          element={
+            <ProtectedRoute>
+              <HomePageTwo />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <HomePageTwo />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/payment-test"
+          element={
+            <ProtectedRoute>
+              <PaymentTest />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="/payment-success" element={<PaymentSucces />} />
+        <Route path="/payment-cancel" element={<PaymentCancel />} />
+        <Route
+          path="/users"
+          element={
+            <ProtectedRoute>
+              <HomePageThree />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/inspection"
+          element={
+            <ProtectedRoute>
+              <HomePageFour />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/clients"
+          element={
+            <ProtectedRoute>
+              <HomePageFive />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/vehicle"
+          element={
+            <ProtectedRoute>
+              <HomePageSix />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/companies"
+          element={
+            <ProtectedRoute>
+              <HomePageSeven />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/subscriptions"
+          element={
+            <ProtectedRoute>
+              <HomePageEight />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/advertisement"
+          element={
+            <ProtectedRoute>
+              <HomePageNine />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/notification"
+          element={
+            <ProtectedRoute>
+              <NotificationPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/rental-feet"
+          element={
+            <ProtectedRoute>
+              <RentalFleet />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/by-subscription"
-          element={<IncomeManagementBySubscription />}
+          element={
+            <ProtectedRoute>
+              <IncomeManagementBySubscription />
+            </ProtectedRoute>
+          }
         />
-
-        <Route exact path="/by-add" element={<IncomeManagementByAdd />} />
-
-        {/* IncomeManagementBySubscription */}
         <Route
-          exact
+          path="/by-add"
+          element={
+            <ProtectedRoute>
+              <IncomeManagementByAdd />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/send-notification"
-          element={<SendNotificationPage />}
+          element={
+            <ProtectedRoute>
+              <SendNotificationPage />
+            </ProtectedRoute>
+          }
         />
         <Route
-          exact
           path="/send-notification-on-sheduled-date"
-          element={<SendNotificationOnSheduledDate />}
+          element={
+            <ProtectedRoute>
+              <SendNotificationOnSheduledDate />
+            </ProtectedRoute>
+          }
         />
-        <Route exact path="/check-in" element={<CheckIn />} />
-        <Route exact path="/check-out" element={<CheckOut />} />
-        <Route exact path="/assign-role" element={<AssignRolePage />} />
-
-        <Route exact path="/add-user" element={<AddUser />} />
-        <Route exact path="/view-profile" element={<ViewPage />} />
-
         <Route
-          exact
+          path="/check-in"
+          element={
+            <ProtectedRoute>
+              <CheckIn />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/check-out"
+          element={
+            <ProtectedRoute>
+              <CheckOut />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/assign-role"
+          element={
+            <ProtectedRoute>
+              <AssignRolePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/add-user"
+          element={
+            <ProtectedRoute>
+              <AddUser />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/view-profile"
+          element={
+            <ProtectedRoute>
+              <ViewPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/by-fleet-subscription"
-          element={<RentalByFleetSubscription />}
+          element={
+            <ProtectedRoute>
+              <RentalByFleetSubscription />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/complete-inspection"
+          element={
+            <ProtectedRoute>
+              <CompletedInspections />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/indivisual-user"
+          element={
+            <ProtectedRoute>
+              <IndivisualUser />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/add-subscription-plan"
+          element={
+            <ProtectedRoute>
+              <AddSubscriptionPlan />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/edit-subscription-plan/:id"
+          element={
+            <ProtectedRoute>
+              <EditSubscriptionPlan />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/agents"
+          element={
+            <ProtectedRoute>
+              <Agent />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/subscription-plan"
+          element={
+            <ProtectedRoute>
+              <SubscriptionPlan />
+            </ProtectedRoute>
+          }
         />
 
         <Route
-          exact
-          path="/complete-inspection"
-          element={<CompletedInspections />}
+          path="/complaints"
+          element={
+            <ProtectedRoute>
+              <ContactUs />
+            </ProtectedRoute>
+          }
         />
-        <Route exact path="/indivisual-user" element={<IndivisualUser />} />
-        <Route
-          exact
-          path="/add-subscription-plan"
-          element={<AddSubscriptionPlan />}
-        />
-        <Route
-          exact
-          path="/edit-subscription-plan/:id"
-          element={<EditSubscriptionPlan />}
-        />
-        <Route exact path="/agents" element={<Agent />} />
-        <Route exact path="/subscription-plan" element={<SubscriptionPlan />} />
-        {/* SL */}
-        {/* <Route exact path="/add-user" element={<AddUserPage />} />
-        <Route exact path="/alert" element={<AlertPage />} /> */}
-        <Route exact path="*" element={<ErrorPage />} />
+
+        {/* Catch all */}
+        <Route path="*" element={<ErrorPage />} />
       </Routes>
     </BrowserRouter>
   );

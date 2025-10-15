@@ -383,7 +383,12 @@ body {
   line-height: 1.7;
   overflow-x: hidden;
 }
-
+.custum-btn-primary{
+background-color: var(--brand) ;
+}
+.custum-btn-primary:hover{
+background-color: var(--brand) ;
+}
 body.overlay-active::after {
   width: 100%;
 }
@@ -13945,7 +13950,7 @@ select option {
 }
 
 #imagePreview {
-  background-image: url("../images/user-grid/user-grid-img13.png");
+  background-image: url("../images/user_placeholder.png");
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center;
@@ -15724,3 +15729,34 @@ td.fc-header-center {
 }
 
 /* === footer css end === */
+body {
+      background-color: #f8f9fa;
+    }
+    .login-container {
+      min-height: 100vh;
+    }
+    .login-card {
+      max-width: 500px;
+      margin: auto;
+      margin-top: 10%;
+      padding: 2rem;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      border-radius: 10px;
+    }
+	.card.login-card img {
+    max-width: 280px;
+    margin: auto;
+}
+.al_btn
+{
+	background-color:#fec72e;
+	border: none;
+    padding: 12px 0px;
+    font-size: 18px;
+    color: #28334a;
+}
+.al_btn:hover
+{
+	background-color:#28334a;
+	color:#fff;
+}

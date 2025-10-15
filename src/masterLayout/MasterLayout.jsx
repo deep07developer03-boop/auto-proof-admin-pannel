@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Icon } from "@iconify/react/dist/iconify.js";
-import { Link, NavLink, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import ThemeToggleButton from "../helper/ThemeToggleButton";
 import { FaCircleUser } from "react-icons/fa6";
 import { FaUsersRectangle } from "react-icons/fa6";
@@ -24,6 +24,7 @@ import { FaSignOutAlt } from "react-icons/fa";
 import { FaAddressBook } from "react-icons/fa6";
 
 const MasterLayout = ({ children }) => {
+  const navigate = useNavigate();
   let [sidebarActive, seSidebarActive] = useState(false);
   let [mobileMenu, setMobileMenu] = useState(false);
   const location = useLocation(); // Hook to get the current route
@@ -103,6 +104,31 @@ const MasterLayout = ({ children }) => {
 
   let mobileMenuControl = () => {
     setMobileMenu(!mobileMenu);
+  };
+  const [userDetails, setUserDetails] = useState("");
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user")); // ✅ parse user back
+
+    console.log("User:", user); // or any field
+    setUserDetails(user);
+  }, []);
+
+  //   email
+  // :
+  // "superadmin@yopmail.com"
+  // firstName
+  // :
+  // "Rishu"
+  // lastName
+  // :
+  // "SuperAdmin"
+  // role
+  // :
+  // "SUPERADMIN"
+
+  const handleLogOut = () => {
+    localStorage.removeItem("token");
+    navigate("/login");
   };
 
   return (
@@ -1060,7 +1086,7 @@ const MasterLayout = ({ children }) => {
                     <div className="py-12 px-16 radius-8 bg-primary-50 mb-16 d-flex align-items-center justify-content-between gap-2">
                       <div>
                         <h6 className="text-lg text-primary-light fw-semibold mb-2">
-                          SuperAdmin
+                          {userDetails?.firstName + " " + userDetails?.lastName}
                         </h6>
                         <span className="text-secondary-light fw-medium text-sm">
                           Admin
@@ -1088,13 +1114,14 @@ const MasterLayout = ({ children }) => {
                       </li>
 
                       <li>
-                        <Link
+                        <button
+                          type="button"
                           className="dropdown-item text-black px-0 py-8 hover-bg-transparent hover-text-danger d-flex align-items-center gap-3"
-                          to="#"
+                          onClick={handleLogOut}
                         >
                           <Icon icon="lucide:power" className="icon text-xl" />{" "}
                           Log Out
-                        </Link>
+                        </button>
                       </li>
                     </ul>
                   </div>

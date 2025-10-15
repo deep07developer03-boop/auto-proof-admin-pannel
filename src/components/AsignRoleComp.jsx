@@ -10,6 +10,8 @@ const BASE_URL = process.env.REACT_APP_BASE_URL;
 console.log("base url", process.env.REACT_APP_BASE_URL);
 
 const AsignRoleComp = () => {
+  const token = localStorage.getItem("token");
+
   const [data, setData] = useState([]);
   const [pagination, setPagination] = useState({
     total: 0,
@@ -21,11 +23,16 @@ const AsignRoleComp = () => {
   const [role, setRole] = useState("");
 
   // Fetch API with pagination, search, filter
-  const getUserList = async (page = 1) => {
+  const getUserList = async (page = 1, search = "") => {
     try {
       const response = await axios.get(
         BASE_URL + `/super-admin-pannel/userList`,
         {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json", // ✅ correct for JSON body
+          },
+
           params: {
             page,
             limit: pagination.limit,
@@ -44,7 +51,7 @@ const AsignRoleComp = () => {
   };
 
   useEffect(() => {
-    getUserList(pagination.page);
+    getUserList(pagination.page, search);
   }, [pagination.page, search, role]);
 
   // handle pagination click
@@ -71,10 +78,17 @@ const AsignRoleComp = () => {
       axios
         .post(
           BASE_URL + `/super-admin-pannel/asign-role/${userDetail.userId}`,
-          { role: selectedRole }
+          { role: selectedRole },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json", // ✅ correct for JSON body
+            },
+          }
         )
         .then((response) => {
           console.log("response", response);
+          getUserList();
         })
         .catch((error) => {
           console.log("error", error);
@@ -93,10 +107,11 @@ const AsignRoleComp = () => {
               <div className="d-flex align-items-center flex-wrap gap-3">
                 <form className="navbar-search">
                   <input
-                    type="text"
+                    type="search"
                     className="bg-base h-40-px w-auto"
                     name="search"
                     placeholder="Search"
+                    onChange={(e) => setSearch(e.target.value)}
                   />
                   <Icon icon="ion:search-outline" className="icon" />
                 </form>
@@ -196,63 +211,64 @@ const AsignRoleComp = () => {
                 </table>
               </div>
               <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-24">
-                <span>Showing 1 to 10 of 12 entries</span>
+                <span>
+                  Showing{" "}
+                  {Math.min(
+                    (pagination.page - 1) * pagination.limit + 1,
+                    pagination.total
+                  )}{" "}
+                  to{" "}
+                  {Math.min(
+                    pagination.page * pagination.limit,
+                    pagination.total
+                  )}{" "}
+                  of {pagination.total} entries
+                </span>
+
                 <ul className="pagination d-flex flex-wrap align-items-center gap-2 justify-content-center">
-                  <li className="page-item">
+                  <li
+                    className={`page-item ${
+                      pagination.page === 1 ? "disabled" : ""
+                    }`}
+                  >
                     <Link
-                      className="page-link bg-neutral-200 text-secondary-light fw-semibold radius-8 border-0 d-flex align-items-center justify-content-center h-32-px w-32-px text-md"
                       to="#"
+                      className="page-link bg-neutral-200 text-secondary-light fw-semibold radius-8 border-0 d-flex align-items-center justify-content-center h-32-px text-md"
+                      onClick={() => handlePageChange(pagination.page - 1)}
                     >
-                      <Icon icon="ep:d-arrow-left" className="" />
+                      <Icon icon="ep:d-arrow-left" />
                     </Link>
                   </li>
-                  <li className="page-item">
+
+                  {Array.from({ length: pagination.totalPages }, (_, i) => (
+                    <li key={i + 1} className="page-item">
+                      <Link
+                        to="#"
+                        className={`page-link fw-semibold radius-8 border-0 d-flex align-items-center justify-content-center h-32-px w-32-px text-md ${
+                          pagination.page === i + 1
+                            ? "bg-primary-600 text-white"
+                            : "bg-neutral-200 text-secondary-light"
+                        }`}
+                        onClick={() => handlePageChange(i + 1)}
+                      >
+                        {i + 1}
+                      </Link>
+                    </li>
+                  ))}
+
+                  <li
+                    className={`page-item ${
+                      pagination.page === pagination.totalPages
+                        ? "disabled"
+                        : ""
+                    }`}
+                  >
                     <Link
-                      className="page-link text-secondary-light fw-semibold radius-8 border-0 d-flex align-items-center justify-content-center h-32-px w-32-px text-md bg-primary-600 text-white"
                       to="#"
+                      className="page-link bg-neutral-200 text-secondary-light fw-semibold radius-8 border-0 d-flex align-items-center justify-content-center h-32-px text-md"
+                      onClick={() => handlePageChange(pagination.page + 1)}
                     >
-                      1
-                    </Link>
-                  </li>
-                  <li className="page-item">
-                    <Link
-                      className="page-link bg-neutral-200 text-secondary-light fw-semibold radius-8 border-0 d-flex align-items-center justify-content-center h-32-px w-32-px"
-                      to="#"
-                    >
-                      2
-                    </Link>
-                  </li>
-                  <li className="page-item">
-                    <Link
-                      className="page-link bg-neutral-200 text-secondary-light fw-semibold radius-8 border-0 d-flex align-items-center justify-content-center h-32-px w-32-px text-md"
-                      to="#"
-                    >
-                      3
-                    </Link>
-                  </li>
-                  <li className="page-item">
-                    <Link
-                      className="page-link bg-neutral-200 text-secondary-light fw-semibold radius-8 border-0 d-flex align-items-center justify-content-center h-32-px w-32-px text-md"
-                      to="#"
-                    >
-                      4
-                    </Link>
-                  </li>
-                  <li className="page-item">
-                    <Link
-                      className="page-link bg-neutral-200 text-secondary-light fw-semibold radius-8 border-0 d-flex align-items-center justify-content-center h-32-px w-32-px text-md"
-                      to="#"
-                    >
-                      5
-                    </Link>
-                  </li>
-                  <li className="page-item">
-                    <Link
-                      className="page-link bg-neutral-200 text-secondary-light fw-semibold radius-8 border-0 d-flex align-items-center justify-content-center h-32-px w-32-px text-md"
-                      to="#"
-                    >
-                      {" "}
-                      <Icon icon="ep:d-arrow-right" className="" />{" "}
+                      <Icon icon="ep:d-arrow-right" />
                     </Link>
                   </li>
                 </ul>

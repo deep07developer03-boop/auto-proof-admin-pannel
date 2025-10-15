@@ -8,6 +8,8 @@ const BASE_URL = process.env.REACT_APP_BASE_URL;
 console.log("base url", process.env.REACT_APP_BASE_URL);
 
 const DashBoardLayerEight = () => {
+  const token = localStorage.getItem("token");
+
   const [data, setData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [checkType, setCheckType] = useState("");
@@ -23,6 +25,12 @@ const DashBoardLayerEight = () => {
     try {
       const response = await axios.get(
         `${BASE_URL}/super-admin-pannel/subscriptions`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json", // ✅ correct for JSON body
+          },
+        },
         {
           params: {
             page,

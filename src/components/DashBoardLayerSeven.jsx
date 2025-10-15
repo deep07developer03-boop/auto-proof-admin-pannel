@@ -9,15 +9,17 @@ const BASE_URL = process.env.REACT_APP_BASE_URL;
 console.log("base url", process.env.REACT_APP_BASE_URL);
 
 const DashBoardLayerSeven = () => {
+  const token = localStorage.getItem("token");
+
   const [data, setData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [checkType, setCheckType] = useState("");
 
   const [pagination, setPagination] = useState({
     page: 1,
-    limit: 10,
+    limit: 2,
     total: 0,
-    totalPages: 1,
+    totalPages: 0,
   });
 
   const getClientList = async (page = 1) => {
@@ -25,6 +27,10 @@ const DashBoardLayerSeven = () => {
       const response = await axios.get(
         `${BASE_URL}/super-admin-pannel/companies`,
         {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json", // ✅ correct for JSON body
+          },
           params: {
             page,
             limit: pagination.limit,
@@ -41,23 +47,34 @@ const DashBoardLayerSeven = () => {
   };
 
   // initial load
-  useEffect(() => {
-    getClientList(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // useEffect(() => {
+  //   getClientList(1);
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
 
-  // trigger fetch when searchTerm or checkType changes
   useEffect(() => {
-    getClientList(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm, checkType]);
+    getClientList(pagination.page, searchTerm);
+  }, [pagination.page, searchTerm]);
 
-  // handle page change
-  const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= pagination.totalPages) {
-      getClientList(newPage);
+  // handle pagination click
+  const handlePageChange = (page) => {
+    if (page > 0 && page <= pagination.totalPages) {
+      setPagination((prev) => ({ ...prev, page }));
     }
   };
+
+  // trigger fetch when searchTerm or checkType changes
+  // useEffect(() => {
+  //   getClientList();
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [searchTerm, checkType]);
+
+  // handle page change
+  // const handlePageChange = (newPage) => {
+  //   if (newPage >= 1 && newPage <= pagination.totalPages) {
+  //     getClientList(newPage);
+  //   }
+  // };
 
   function formatDateToDDMMYYYY(dateString) {
     if (!dateString) return null;
@@ -110,13 +127,18 @@ const DashBoardLayerSeven = () => {
               {data.length > 0 ? (
                 data?.map((item, index) => {
                   return (
-                    <tr>
-                      <td>{index + 1}</td>
+                    <tr key={index}>
+                      {/* <td>{index + 1}</td> */}
+
+                      <td>
+                        {(pagination.page - 1) * pagination.limit + index + 1}
+                      </td>
+
                       <td>{formatDateToDDMMYYYY(item.createdAt)}</td>
                       <td className="text-center">
-                        {item.admin.profileImage !== null ? (
+                        {item.admin?.admin?.profileImage !== null ? (
                           <img
-                            src={`` + item.profileImage}
+                            src={`` + item?.admin?.profileImage}
                             style={{
                               width: "50px",
                               height: "50px",
@@ -127,13 +149,13 @@ const DashBoardLayerSeven = () => {
                           <FaCircleUser style={{ fontSize: "27px" }} />
                         )}
                       </td>
-                      <td>{item.admin.firstName}</td>
-                      <td>{item.admin.lastName}</td>
-                      <td>{item.gender}</td>
+                      <td>{item.admin?.firstName}</td>
+                      <td>{item.admin?.lastName}</td>
+                      <td>{item.admin?.gender}</td>
                       <td>{item.companyName}</td>
-                      <td>{item.admin.phoneNumber}</td>
-                      <td>{item.admin.email}</td>
-                      <td>{item.admin.address}</td>
+                      <td>{item.admin?.phoneNumber}</td>
+                      <td>{item.admin?.email}</td>
+                      <td>{item.admin?.address}</td>
                     </tr>
                   );
                 })
@@ -170,6 +192,62 @@ const DashBoardLayerSeven = () => {
         </div>
 
         {/* Pagination */}
+        {/* <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-24">
+          <span>
+            Showing{" "}
+            {Math.min(
+              (pagination.page - 1) * pagination.limit + 1,
+              pagination.total
+            )}{" "}
+            to {Math.min(pagination.page * pagination.limit, pagination.total)}{" "}
+            of {pagination.total} entries
+          </span>
+
+          <ul className="pagination d-flex flex-wrap align-items-center gap-2 justify-content-center">
+            <li
+              className={`page-item ${pagination.page === 1 ? "disabled" : ""}`}
+            >
+              <Link
+                to="#"
+                className="page-link bg-neutral-200 text-secondary-light fw-semibold radius-8 border-0 d-flex align-items-center justify-content-center h-32-px text-md"
+                onClick={() => handlePageChange(pagination.page - 1)}
+              >
+                <Icon icon="ep:d-arrow-left" />
+              </Link>
+            </li>
+
+            {Array.from({ length: pagination.totalPages }, (_, i) => (
+              <li key={i + 1} className="page-item">
+                <Link
+                  to="#"
+                  className={`page-link fw-semibold radius-8 border-0 d-flex align-items-center justify-content-center h-32-px w-32-px text-md ${
+                    pagination.page === i + 1
+                      ? "bg-primary-600 text-white"
+                      : "bg-neutral-200 text-secondary-light"
+                  }`}
+                  onClick={() => handlePageChange(i + 1)}
+                >
+                  {i + 1}
+                </Link>
+              </li>
+            ))}
+
+            <li
+              className={`page-item ${
+                pagination.page === pagination.totalPages ? "disabled" : ""
+              }`}
+            >
+              <Link
+                to="#"
+                className="page-link bg-neutral-200 text-secondary-light fw-semibold radius-8 border-0 d-flex align-items-center justify-content-center h-32-px text-md"
+                onClick={() => handlePageChange(pagination.page + 1)}
+              >
+                <Icon icon="ep:d-arrow-right" />
+              </Link>
+            </li>
+          </ul>
+        </div> */}
+
         <div className="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-24">
           <span>
             Showing{" "}

@@ -9,6 +9,8 @@ const BASE_URL = process.env.REACT_APP_BASE_URL;
 console.log("base url", process.env.REACT_APP_BASE_URL);
 
 const AddUserComp = () => {
+  const token = localStorage.getItem("token");
+
   const [companies, setCompanies] = useState([]);
 
   const [formData, setFormData] = useState({
@@ -29,7 +31,13 @@ const AddUserComp = () => {
     const getCompanies = async () => {
       try {
         const response = await axios.get(
-          BASE_URL + "/super-admin-pannel/companies"
+          BASE_URL + "/super-admin-pannel/companies",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json", // ✅ correct for JSON body
+            },
+          }
         );
         console.log("response of companies", response.data.data);
         setCompanies(response?.data?.data || []);
@@ -92,15 +100,25 @@ const AddUserComp = () => {
     });
 
     axios
-      .post(BASE_URL + "/super-admin-pannel/add-user", {
-        ...formData,
-        profileImage: imagePreviewUrl || null,
-      })
+      .post(
+        BASE_URL + "/super-admin-pannel/add-user",
+        {
+          ...formData,
+          profileImage: imagePreviewUrl || null,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            //  "Content-Type": "multipart/form-data",
+          },
+        }
+      )
       .then((response) => {
+        console.log("response", response);
         if (response.status === 201) {
           Swal.fire({
-            title: "Good job!",
-            text: "You clicked the button!",
+            title: "Thank You",
+            text: response?.data?.message || "",
             icon: "success",
           });
 
@@ -109,15 +127,16 @@ const AddUserComp = () => {
           Swal.fire({
             icon: "error",
             title: "Oops...",
-            text: "Something went wrong!",
+            text: response?.data?.message || "",
           });
         }
       })
       .catch((error) => {
+        console.log("error", error);
         Swal.fire({
           icon: "error",
           title: "Oops...",
-          text: "Something went wrong!",
+          text: error?.response?.data?.message || "something went wrong",
         });
       });
   };

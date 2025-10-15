@@ -8,22 +8,29 @@ const BASE_URL = process.env.REACT_APP_BASE_URL;
 console.log("base url", process.env.REACT_APP_BASE_URL);
 
 const AgentsComp = () => {
+  const token = localStorage.getItem("token");
+
   const [data, setData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [checkType, setCheckType] = useState("");
 
   const [pagination, setPagination] = useState({
     page: 1,
-    limit: 10,
+    limit: 2,
     total: 0,
-    totalPages: 1,
+    totalPages: 0,
   });
 
   const getClientList = async (page = 1) => {
     try {
       const response = await axios.get(
         `${BASE_URL}/super-admin-pannel/agents`,
+
         {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json", // ✅ correct for JSON body
+          },
           params: {
             page,
             limit: pagination.limit,
@@ -41,22 +48,17 @@ const AgentsComp = () => {
 
   // initial load
   useEffect(() => {
-    getClientList(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    getClientList(pagination.page, searchTerm);
+  }, [pagination.page, searchTerm]);
 
-  // trigger fetch when searchTerm or checkType changes
-  useEffect(() => {
-    getClientList(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm, checkType]);
-
-  // handle page change
-  const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= pagination.totalPages) {
-      getClientList(newPage);
+  // handle pagination click
+  const handlePageChange = (page) => {
+    if (page > 0 && page <= pagination.totalPages) {
+      setPagination((prev) => ({ ...prev, page }));
     }
   };
+
+  // handle page change
 
   return (
     <div className="card h-100 p-0 radius-12">

@@ -8,6 +8,8 @@ const BASE_URL = process.env.REACT_APP_BASE_URL;
 console.log("base url", process.env.REACT_APP_BASE_URL);
 
 const DashBoardLayerThree = () => {
+  const token = localStorage.getItem("token");
+
   const [data, setData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [checkType, setCheckType] = useState("");
@@ -21,14 +23,23 @@ const DashBoardLayerThree = () => {
 
   const getUserList = async (page = 1) => {
     try {
-      const response = await axios.get(`${BASE_URL}/auth/inspection`, {
-        params: {
-          page,
-          limit: pagination.limit,
-          search: searchTerm || undefined,
-          checkType: checkType || undefined,
+      const response = await axios.get(
+        `${BASE_URL}/auth/inspection`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json", // ✅ correct for JSON body
+          },
         },
-      });
+        {
+          params: {
+            page,
+            limit: pagination.limit,
+            search: searchTerm || undefined,
+            checkType: checkType || undefined,
+          },
+        }
+      );
 
       setData(response?.data?.data || []);
       setPagination(response?.data?.pagination || pagination);

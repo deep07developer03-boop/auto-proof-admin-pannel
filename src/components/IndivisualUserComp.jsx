@@ -9,6 +9,8 @@ const BASE_URL = process.env.REACT_APP_BASE_URL;
 console.log("base url", process.env.REACT_APP_BASE_URL);
 
 const IndivisualUserComp = () => {
+  const token = localStorage.getItem("token");
+
   const [data, setData] = useState([]);
   const [pagination, setPagination] = useState({
     page: 1,
@@ -25,6 +27,10 @@ const IndivisualUserComp = () => {
       const response = await axios.get(
         `${BASE_URL}/super-admin-pannel/indivisual-user`,
         {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
           params: {
             page,
             limit: pagination.limit,
@@ -101,7 +107,7 @@ const IndivisualUserComp = () => {
               <tr>
                 <th>Sr N°</th>
                 <th>Date</th>
-                <th>Profile Image</th>
+                <th className="text-center">Profile Image</th>
 
                 <th>First Name</th>
                 <th>Last Name</th>
@@ -119,12 +125,13 @@ const IndivisualUserComp = () => {
                       {(pagination.page - 1) * pagination.limit + index + 1}
                     </td>
                     <td>{formatDateToDDMMYYYY(user?.createdAt)}</td>
-                    <td>
+                    <td className="text-center">
                       {user.profileImage ? (
                         <img
                           src={user.profileImage}
                           alt="profile"
-                          className="w-40-px h-40-px rounded-circle"
+                          className="rounded-circle"
+                          style={{ width: "45px", height: "45px" }}
                         />
                       ) : (
                         <FaCircleUser style={{ fontSize: "32px" }} />

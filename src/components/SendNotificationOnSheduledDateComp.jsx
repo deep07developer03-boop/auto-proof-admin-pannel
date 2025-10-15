@@ -5,6 +5,8 @@ import Swal from "sweetalert2";
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 const SendNotificationOnSheduledDateComp = () => {
+  const token = localStorage.getItem("token");
+
   const [formData, setFormData] = useState({
     title: "",
     message: "",
@@ -44,7 +46,13 @@ const SendNotificationOnSheduledDateComp = () => {
       axios
         .post(
           BASE_URL + "/super-admin-pannel/send-notification-on-sheduled-date",
-          formData
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json", // ✅ correct for JSON body
+            },
+          }
         )
         .then((response) => {
           console.log("response", response);

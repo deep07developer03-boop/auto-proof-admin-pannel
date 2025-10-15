@@ -7,11 +7,15 @@ const BASE_URL = process.env.REACT_APP_BASE_URL;
 console.log("base url", process.env.REACT_APP_BASE_URL);
 
 const DashBoardLayerNine = () => {
+  const token = localStorage.getItem("token");
+
   const [formData, setFormData] = useState({
     startDate: "",
     endDate: "",
     bannerImage: null,
     defaultImage: null,
+    advertiserName: "",
+    advertisementPrice: "",
   });
 
   const [errors, setErrors] = useState({});
@@ -48,8 +52,17 @@ const DashBoardLayerNine = () => {
     if (!formData.bannerImage) {
       newErrors.bannerImage = "Banner Image is required";
     }
+
     if (!formData.defaultImage) {
       newErrors.defaultImage = "Default Image is required";
+    }
+
+    if (!formData.advertiserName) {
+      newErrors.advertiserName = "advertiser Name is required";
+    }
+
+    if (!formData.advertisementPrice) {
+      newErrors.advertisementPrice = "advertisement Price is required";
     }
 
     setErrors(newErrors);
@@ -69,12 +82,16 @@ const DashBoardLayerNine = () => {
         data.append("endDate", formData.endDate);
         data.append("bannerImage", formData.bannerImage); // file
         data.append("defaultImage", formData.defaultImage); // file
+        data.append("advertiserName", formData.advertiserName); // file
+        data.append("advertisementPrice", formData.advertisementPrice); // file
 
         const response = await axios.post(
           BASE_URL + `/super-admin-pannel/add-advertisement`,
           data,
           {
             headers: {
+              Authorization: `Bearer ${token}`,
+
               "Content-Type": "multipart/form-data",
             },
           }
@@ -86,6 +103,13 @@ const DashBoardLayerNine = () => {
           title: "Thank You!",
           text: response?.data?.message,
           icon: "success",
+        });
+
+        setFormData({
+          startDate: "",
+          endDate: "",
+          bannerImage: null,
+          defaultImage: null,
         });
       } catch (error) {
         console.error("Upload failed:", error);
@@ -102,6 +126,46 @@ const DashBoardLayerNine = () => {
         <div className="col-sm-12">
           <div className="card p-3">
             <form onSubmit={handleSubmit}>
+              <div className="row mb-4">
+                <div className="col">
+                  <label htmlFor="bannerImage" className="form-label">
+                    Advertiser Name
+                  </label>
+                  <input
+                    type="text"
+                    name="advertiserName"
+                    className="form-control"
+                    value={formData.advertiserName}
+                    onChange={handleChange}
+                    placeholder="Advertiser Name"
+                  />
+                  {errors.advertiserName && (
+                    <small className="text-danger">
+                      {errors.advertiserName}
+                    </small>
+                  )}
+                </div>
+
+                <div className="col">
+                  <label htmlFor="defaultImage" className="form-label">
+                    Advertisement Price
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Advertisement Price"
+                    name="advertisementPrice"
+                    className="form-control"
+                    value={formData.advertisementPrice}
+                    onChange={handleChange}
+                  />
+                  {errors.advertisementPrice && (
+                    <small className="text-danger">
+                      {errors.advertisementPrice}
+                    </small>
+                  )}
+                </div>
+              </div>
+
               <div className="row">
                 <div className="col">
                   <label htmlFor="startDate" className="form-label">
@@ -139,7 +203,7 @@ const DashBoardLayerNine = () => {
               <div className="row">
                 <div className="col">
                   <label htmlFor="bannerImage" className="form-label">
-                    Banner Image
+                    Add Banner Image
                   </label>
                   <input
                     type="file"
@@ -168,7 +232,7 @@ const DashBoardLayerNine = () => {
                 </div>
               </div>
 
-              <button type="submit" className="btn btn-primary mt-3">
+              <button type="submit" className="btn custum-btn-primary mt-3">
                 Submit
               </button>
             </form>

@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useEffect } from "react";
 import { FaCircleUser } from "react-icons/fa6";
 import axios from "axios";
+import Swal from "sweetalert2";
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
@@ -12,7 +13,7 @@ const ViewPageComp = () => {
   const [profileData, setProfileData] = useState("");
 
   const [imagePreview, setImagePreview] = useState(
-    "assets/images/user-grid/user-grid-img13.png"
+    "https://cdn-icons-png.flaticon.com/512/3682/3682281.png"
   );
 
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -28,15 +29,15 @@ const ViewPageComp = () => {
     setConfirmPasswordVisible(!confirmPasswordVisible);
   };
 
-  const readURL = (input) => {
-    if (input.target.files && input.target.files[0]) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setImagePreview(e.target.result);
-      };
-      reader.readAsDataURL(input.target.files[0]);
-    }
-  };
+  // const readURL = (input) => {
+  //   if (input.target.files && input.target.files[0]) {
+  //     const reader = new FileReader();
+  //     reader.onload = (e) => {
+  //       setImagePreview(e.target.result);
+  //     };
+  //     reader.readAsDataURL(input.target.files[0]);
+  //   }
+  // };
 
   useEffect(() => {
     const getProfileData = () => {
@@ -55,22 +56,244 @@ const ViewPageComp = () => {
     getProfileData();
   }, []);
 
-  console.log("profileData", profileData);
+  // console.log("profileData", profileData);
+
+  // =================================
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    isEmailVerified: false,
+    profileImage: null,
+    countryCode: "+1",
+    phoneNumber: "",
+    isPhoneNumberVerified: false,
+    password: "",
+    address: "",
+    gender: "MALE",
+    role: "ADMIN",
+    userType: "individual",
+    isActive: true,
+    termsAndConditions: false,
+    companyId: "",
+  });
+
+  console.log("formData", formData);
+  // const [imagePreview, setImagePreview] = useState(null);
+  const [errors, setErrors] = useState({});
+
+  // 📌 Handle input changes
+  const handleChange = (e) => {
+    const { id, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [id]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  // 📌 Handle Image Upload
+  const readURL = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData((prev) => ({ ...prev, profileImage: file }));
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  // 📌 Validate fields
+  const validate = () => {
+    let newErrors = {};
+
+    if (!formData.firstName.trim())
+      newErrors.firstName = "First name is required";
+    if (!formData.lastName.trim()) newErrors.lastName = "Last name is required";
+
+    if (!formData.email) newErrors.email = "Email is required";
+    else if (!/\S+@\S+\.\S+/.test(formData.email))
+      newErrors.email = "Invalid email";
+
+    if (!formData.countryCode)
+      newErrors.countryCode = "Country code is required";
+
+    if (!/^\+\d{1,3}$/.test(formData.countryCode)) {
+      newErrors.countryCode = "Invalid country code (e.g. +1)";
+    }
+
+    if (!formData.phoneNumber)
+      newErrors.phoneNumber = "Phone number is required";
+    else if (!/^[0-9]{8,15}$/.test(formData.phoneNumber)) {
+      newErrors.phoneNumber = "Phone must be 8–15 digits";
+    }
+
+    if (!formData.password) newErrors.password = "Password is required";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // 📌 Handle submit
+  const handleSubmit = () => {
+    // if (!validate()) return;
+
+    console.log("Form Data Submitted:", formData);
+
+    axios
+      .post(BASE_URL + `/super-admin-pannel/update-profile`, formData, {
+        headers: {
+          Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImJkNmZhMWMxLTRhNzEtNGQyNi04ZDFjLWQxNzRkMjUzOTRmNCIsInJvbGUiOiJTVVBFUkFETUlOIiwiZW1haWwiOiJzdXBlcmFkbWluQHlvcG1haWwuY29tIiwiaWF0IjoxNzU2NDU5NTU2LCJleHAiOjE3NTY1NDU5NTZ9.OM2JAvJtT8c2tRmY1De0T7FgXhfU0KVQKr2KhNHNlR0`, // ✅ attach token here
+          "Content-Type": "multipart/form-data", // since you're sending formData
+        },
+      })
+      .then((response) => {
+        console.log("response", response);
+        if (response.status == 200) {
+          Swal.fire({
+            title: "Thank you!",
+            text: response?.data?.message,
+            icon: "success",
+          });
+        } else {
+          Swal.fire(response?.data?.message);
+        }
+      })
+      .catch((error) => {
+        console.log("error", error);
+        Swal.fire(error?.response?.data?.message);
+      });
+  };
+
+  // =========================================================================================
+  const [formData2, setFormData2] = useState({
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+
+  const [errors2, setErrors2] = useState({});
+
+  const [oldPasswordVisible2, setOldPasswordVisible2] = useState(false);
+  const [newPasswordVisible2, setNewPasswordVisible2] = useState(false);
+  const [confirmPasswordVisible2, setConfirmPasswordVisible2] = useState(false);
+
+  // Toggle functions
+  const toggleOldPasswordVisibility1 = () => {
+    setOldPasswordVisible2((prev) => !prev);
+  };
+
+  const toggleNewPasswordVisibility2 = () => {
+    setNewPasswordVisible2((prev) => !prev);
+  };
+
+  const toggleConfirmPasswordVisibility3 = () => {
+    setConfirmPasswordVisible2((prev) => !prev);
+  };
+
+  // Handle input change
+  const handleChange2 = (e) => {
+    setFormData2({ ...formData2, [e.target.name]: e.target.value }); // ✅ use setFormData2
+    setErrors2({ ...errors2, [e.target.name]: "" }); // ✅ use setErrors2
+  };
+
+  // Validate form
+  const validateForm2 = () => {
+    let newErrors = {};
+    if (!formData2.oldPassword)
+      newErrors.oldPassword = "Old password is required";
+    if (!formData2.newPassword) {
+      newErrors.newPassword = "New password is required";
+    } else if (formData2.newPassword.length < 6) {
+      newErrors.newPassword = "Password must be at least 6 characters";
+    }
+    if (!formData2.confirmPassword) {
+      newErrors.confirmPassword = "Confirm password is required";
+    } else if (formData2.newPassword !== formData2.confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
+    }
+    setErrors2(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Handle form submit
+  const handleSubmit2 = (e) => {
+    e.preventDefault();
+    if (validateForm2()) {
+      console.log("Submitted values:", formData2, {
+        old_password: formData2.oldPassword,
+        new_password: formData2.newPassword,
+      }); // ✅ fixed to formData2
+      alert("Password change form submitted! Check console.");
+
+      axios
+        .post(
+          BASE_URL + `/super-admin-pannel/change-passowrd`,
+          {
+            old_password: formData2.oldPassword,
+            new_password: formData2.newPassword,
+          },
+          {
+            headers: {
+              Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImJkNmZhMWMxLTRhNzEtNGQyNi04ZDFjLWQxNzRkMjUzOTRmNCIsInJvbGUiOiJTVVBFUkFETUlOIiwiZW1haWwiOiJzdXBlcmFkbWluQHlvcG1haWwuY29tIiwiaWF0IjoxNzU2NDU5NTU2LCJleHAiOjE3NTY1NDU5NTZ9.OM2JAvJtT8c2tRmY1De0T7FgXhfU0KVQKr2KhNHNlR0`, // ✅ attach token here
+              "Content-Type": "application/json", // ✅ correct for JSON body
+            },
+          }
+        )
+        .then((response) => {
+          console.log("response", response);
+          if (response.status == 200) {
+            Swal.fire({
+              title: "Thank you!",
+              text: response?.data?.message,
+              icon: "success",
+            });
+
+            setFormData2({
+              oldPassword: "",
+              newPassword: "",
+              confirmPassword: "",
+            });
+          } else {
+            Swal.fire(response?.data?.message);
+          }
+        })
+        .catch((error) => {
+          console.log("error", error);
+
+          Swal.fire(error?.response?.data?.message);
+        });
+    }
+  };
+
   return (
     <div className="row gy-4">
       <div className="col-lg-4">
         <div className="user-grid-card position-relative border radius-16 overflow-hidden bg-base h-100">
-          <img
+          {/* <img
             src="assets/images/auto-proof_logo.png"
             alt=""
             className="w-100 object-fit-cover"
-          />
+          /> */}
+
+          <div style={{ backgroundColor: "#c2bdb2", padding: "10px" }}>
+            <img
+              src="assets/images/auto-proof_logo.png"
+              alt=""
+              class="w-100 object-fit-cover"
+            />
+          </div>
+
           <div className="pb-24 ms-16 mb-24 me-16  mt--100">
             <div className="text-center border border-top-0 border-start-0 border-end-0">
               <img
                 src="https://cdn-icons-png.flaticon.com/512/3682/3682281.png"
                 alt=""
                 className="border-3 border-black border-width-4-px w-200-px pb-3 h-200-px rounded-circle object-fit-cover"
+                style={{
+                  height: "130px",
+                  width: "135px",
+                  borderRadius: "50%",
+                  marginTop: "10px",
+                  marginLeft: "7px",
+                }}
               />
 
               {/* <FaCircleUser style={{ fontSize: "50px" }} /> */}
@@ -173,13 +396,12 @@ const ViewPageComp = () => {
                 className="tab-pane fade show active"
                 id="pills-edit-profile"
                 role="tabpanel"
-                aria-labelledby="pills-edit-profile-tab"
-                tabIndex={0}
               >
                 <h6 className="text-md text-primary-light mb-16">
                   Profile Image
                 </h6>
-                {/* Upload Image Start */}
+
+                {/* Upload Image */}
                 <div className="mb-24 mt-16">
                   <div className="avatar-upload">
                     <div className="avatar-edit position-absolute bottom-0 end-0 me-24 mt-16 z-1 cursor-pointer">
@@ -194,188 +416,212 @@ const ViewPageComp = () => {
                         htmlFor="imageUpload"
                         className="w-32-px h-32-px d-flex justify-content-center align-items-center bg-primary-50 text-primary-600 border border-primary-600 bg-hover-primary-100 text-lg rounded-circle"
                       >
-                        <Icon
-                          icon="solar:camera-outline"
-                          className="icon"
-                        ></Icon>
+                        <Icon icon="solar:camera-outline" className="icon" />
                       </label>
                     </div>
                     <div className="avatar-preview">
                       <div
-                        id="imagePreview"
                         style={{
                           backgroundImage: `url(${imagePreview})`,
                           backgroundSize: "cover",
                           backgroundPosition: "center",
+                          height: "120px",
+                          width: "120px",
+                          borderRadius: "50%",
+                          marginTop: "10px",
+                          marginLeft: "12px",
+
+                          //                           background-image: url(https://cdn-icons-png.flaticon.com/512/3682/3682281.png);
+                          //     background-size: cover;
+                          //     background-position: center center;
+                          //     height: 120px;
+                          //     width: 120px;
+                          //     border-radius: 50%;
+                          //     margin-top: 10px;
+                          //     margin-left: 12px;
+                          // }
                         }}
                       />
                     </div>
                   </div>
                 </div>
-                {/* Upload Image End */}
-                <form action="#">
+
+                {/* Form */}
+                <form>
                   <div className="row">
+                    {/* First Name */}
                     <div className="col-sm-6">
                       <div className="mb-20">
-                        <label
-                          htmlFor="name"
-                          className="form-label fw-semibold text-primary-light text-sm mb-8"
-                        >
-                          Full Name
-                          <span className="text-danger-600">*</span>
-                        </label>
+                        <label className="form-label">First Name *</label>
                         <input
                           type="text"
+                          id="firstName"
                           className="form-control radius-8"
-                          id="name"
-                          placeholder="Enter Full Name"
+                          value={formData.firstName}
+                          onChange={handleChange}
                         />
+                        {errors.firstName && (
+                          <small className="text-danger">
+                            {errors.firstName}
+                          </small>
+                        )}
                       </div>
                     </div>
+
+                    {/* Last Name */}
                     <div className="col-sm-6">
                       <div className="mb-20">
-                        <label
-                          htmlFor="email"
-                          className="form-label fw-semibold text-primary-light text-sm mb-8"
-                        >
-                          Email <span className="text-danger-600">*</span>
-                        </label>
+                        <label className="form-label">Last Name *</label>
+                        <input
+                          type="text"
+                          id="lastName"
+                          className="form-control radius-8"
+                          value={formData.lastName}
+                          onChange={handleChange}
+                        />
+                        {errors.lastName && (
+                          <small className="text-danger">
+                            {errors.lastName}
+                          </small>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Email */}
+                    <div className="col-sm-6">
+                      <div className="mb-20">
+                        <label className="form-label">Email *</label>
                         <input
                           type="email"
-                          className="form-control radius-8"
                           id="email"
-                          placeholder="Enter email address"
+                          className="form-control radius-8"
+                          value={formData.email}
+                          onChange={handleChange}
                         />
+                        {errors.email && (
+                          <small className="text-danger">{errors.email}</small>
+                        )}
                       </div>
                     </div>
-                    <div className="col-sm-6">
+
+                    {/* Country Code */}
+                    <div className="col-sm-2">
                       <div className="mb-20">
-                        <label
-                          htmlFor="number"
-                          className="form-label fw-semibold text-primary-light text-sm mb-8"
-                        >
-                          Phone
-                        </label>
+                        <label className="form-label">Country Code *</label>
                         <input
-                          type="email"
+                          type="text"
+                          id="countryCode"
                           className="form-control radius-8"
-                          id="number"
-                          placeholder="Enter phone number"
+                          value={formData.countryCode}
+                          onChange={handleChange}
+                        />
+                        {errors.countryCode && (
+                          <small className="text-danger">
+                            {errors.countryCode}
+                          </small>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Phone Number */}
+                    <div className="col-sm-4">
+                      <div className="mb-20">
+                        <label className="form-label">Phone Number *</label>
+                        <input
+                          type="text"
+                          id="phoneNumber"
+                          className="form-control radius-8"
+                          value={formData.phoneNumber}
+                          onChange={handleChange}
+                        />
+                        {errors.phoneNumber && (
+                          <small className="text-danger">
+                            {errors.phoneNumber}
+                          </small>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Password */}
+
+                    {/* Address */}
+                    <div className="col-sm-6">
+                      <div className="mb-20">
+                        <label className="form-label">Address</label>
+                        <input
+                          type="text"
+                          id="address"
+                          className="form-control radius-8"
+                          value={formData.address}
+                          onChange={handleChange}
                         />
                       </div>
                     </div>
+
+                    {/* Gender */}
                     <div className="col-sm-6">
                       <div className="mb-20">
-                        <label
-                          htmlFor="depart"
-                          className="form-label fw-semibold text-primary-light text-sm mb-8"
-                        >
-                          Department
-                          <span className="text-danger-600">*</span>{" "}
-                        </label>
+                        <label className="form-label">Gender *</label>
                         <select
+                          id="gender"
                           className="form-control radius-8 form-select"
-                          id="depart"
-                          defaultValue="Select Event Title"
+                          value={formData.gender}
+                          onChange={handleChange}
                         >
-                          <option value="Select Event Title" disabled>
-                            Select Event Title
-                          </option>
-                          <option value="Enter Event Title">
-                            Enter Event Title
-                          </option>
-                          <option value="Enter Event Title One">
-                            Enter Event Title One
-                          </option>
-                          <option value="Enter Event Title Two">
-                            Enter Event Title Two
-                          </option>
+                          <option value="MALE">Male</option>
+                          <option value="FEMALE">Female</option>
                         </select>
                       </div>
                     </div>
+
+                    {/* Role */}
                     <div className="col-sm-6">
                       <div className="mb-20">
-                        <label
-                          htmlFor="desig"
-                          className="form-label fw-semibold text-primary-light text-sm mb-8"
-                        >
-                          Designation
-                          <span className="text-danger-600">*</span>{" "}
-                        </label>
+                        <label className="form-label">Role *</label>
                         <select
+                          id="role"
                           className="form-control radius-8 form-select"
-                          id="desig"
-                          defaultValue="Select Designation Title"
+                          value={formData.role}
+                          onChange={handleChange}
                         >
-                          <option value="Select Designation Title" disabled>
-                            Select Designation Title
-                          </option>
-                          <option value="Enter Designation Title">
-                            Enter Designation Title
-                          </option>
-                          <option value="Enter Designation Title One">
-                            Enter Designation Title One
-                          </option>
-                          <option value="Enter Designation Title Two">
-                            Enter Designation Title Two
-                          </option>
+                          <option value="ADMIN">Admin</option>
+                          <option value="SUPERADMIN">Super Admin</option>
                         </select>
                       </div>
                     </div>
+
+                    {/* User Type */}
                     <div className="col-sm-6">
                       <div className="mb-20">
-                        <label
-                          htmlFor="Language"
-                          className="form-label fw-semibold text-primary-light text-sm mb-8"
-                        >
-                          Language
-                          <span className="text-danger-600">*</span>{" "}
-                        </label>
+                        <label className="form-label">User Type *</label>
                         <select
+                          id="userType"
                           className="form-control radius-8 form-select"
-                          id="Language"
-                          defaultValue="Select Language"
+                          value={formData.userType}
+                          onChange={handleChange}
                         >
-                          <option value="Select Language" disabled>
-                            Select Language
-                          </option>
-                          <option value="English">English</option>
-                          <option value="Bangla">Bangla</option>
-                          <option value="Hindi">Hindi</option>
-                          <option value="Arabic">Arabic</option>
+                          <option value="individual">Individual</option>
+                          <option value="company">Company</option>
                         </select>
-                      </div>
-                    </div>
-                    <div className="col-sm-12">
-                      <div className="mb-20">
-                        <label
-                          htmlFor="desc"
-                          className="form-label fw-semibold text-primary-light text-sm mb-8"
-                        >
-                          Description
-                        </label>
-                        <textarea
-                          name="#0"
-                          className="form-control radius-8"
-                          id="desc"
-                          placeholder="Write description..."
-                          defaultValue={""}
-                        />
                       </div>
                     </div>
                   </div>
+
+                  {/* Buttons */}
                   <div className="d-flex align-items-center justify-content-center gap-3">
                     <button
                       type="button"
                       className="border border-danger-600 bg-hover-danger-200 text-danger-600 text-md px-56 py-11 radius-8"
+                      onClick={() => setFormData({})}
                     >
                       Cancel
                     </button>
                     <button
                       type="button"
                       className="btn btn-primary border border-primary-600 text-md px-56 py-12 radius-8"
+                      onClick={handleSubmit}
                     >
-                      Save
+                      Update
                     </button>
                   </div>
                 </form>
@@ -387,149 +633,115 @@ const ViewPageComp = () => {
                 aria-labelledby="pills-change-passwork-tab"
                 tabIndex="0"
               >
-                <div className="mb-20">
-                  <label
-                    htmlFor="your-password"
-                    className="form-label fw-semibold text-primary-light text-sm mb-8"
-                  >
-                    New Password <span className="text-danger-600">*</span>
-                  </label>
-                  <div className="position-relative">
-                    <input
-                      type={passwordVisible ? "text" : "password"}
-                      className="form-control radius-8"
-                      id="your-password"
-                      placeholder="Enter New Password*"
-                    />
-                    <span
-                      className={`toggle-password ${
-                        passwordVisible ? "ri-eye-off-line" : "ri-eye-line"
-                      } cursor-pointer position-absolute end-0 top-50 translate-middle-y me-16 text-secondary-light`}
-                      onClick={togglePasswordVisibility}
-                    ></span>
+                <form onSubmit={handleSubmit2}>
+                  {/* Old Password */}
+                  <div className="mb-20">
+                    <label
+                      htmlFor="oldPassword"
+                      className="form-label fw-semibold text-primary-light text-sm mb-8"
+                    >
+                      Old Password <span className="text-danger-600">*</span>
+                    </label>
+                    <div className="position-relative">
+                      <input
+                        type={oldPasswordVisible2 ? "text" : "password"}
+                        className="form-control radius-8"
+                        id="oldPassword"
+                        name="oldPassword"
+                        value={formData2.oldPassword}
+                        onChange={handleChange2}
+                        placeholder="Enter Old Password*"
+                      />
+                      <span
+                        className={`toggle-password ${
+                          oldPasswordVisible2
+                            ? "ri-eye-off-line"
+                            : "ri-eye-line"
+                        } cursor-pointer position-absolute end-0 top-50 translate-middle-y me-16 text-secondary-light`}
+                        onClick={toggleOldPasswordVisibility1}
+                      ></span>
+                    </div>
+                    {errors2.oldPassword && (
+                      <small className="text-danger">
+                        {errors2.oldPassword}
+                      </small>
+                    )}
                   </div>
-                </div>
 
-                <div className="mb-20">
-                  <label
-                    htmlFor="confirm-password"
-                    className="form-label fw-semibold text-primary-light text-sm mb-8"
-                  >
-                    Confirm Password <span className="text-danger-600">*</span>
-                  </label>
-                  <div className="position-relative">
-                    <input
-                      type={confirmPasswordVisible ? "text" : "password"}
-                      className="form-control radius-8"
-                      id="confirm-password"
-                      placeholder="Confirm Password*"
-                    />
-                    <span
-                      className={`toggle-password ${
-                        confirmPasswordVisible
-                          ? "ri-eye-off-line"
-                          : "ri-eye-line"
-                      } cursor-pointer position-absolute end-0 top-50 translate-middle-y me-16 text-secondary-light`}
-                      onClick={toggleConfirmPasswordVisibility}
-                    ></span>
+                  {/* New Password */}
+                  <div className="mb-20">
+                    <label
+                      htmlFor="newPassword"
+                      className="form-label fw-semibold text-primary-light text-sm mb-8"
+                    >
+                      New Password <span className="text-danger-600">*</span>
+                    </label>
+                    <div className="position-relative">
+                      <input
+                        type={newPasswordVisible2 ? "text" : "password"}
+                        className="form-control radius-8"
+                        id="newPassword"
+                        name="newPassword"
+                        value={formData2.newPassword}
+                        onChange={handleChange2}
+                        placeholder="Enter New Password*"
+                      />
+                      <span
+                        className={`toggle-password ${
+                          newPasswordVisible2
+                            ? "ri-eye-off-line"
+                            : "ri-eye-line"
+                        } cursor-pointer position-absolute end-0 top-50 translate-middle-y me-16 text-secondary-light`}
+                        onClick={toggleNewPasswordVisibility2}
+                      ></span>
+                    </div>
+                    {errors2.newPassword && (
+                      <small className="text-danger">
+                        {errors2.newPassword}
+                      </small>
+                    )}
                   </div>
-                </div>
-              </div>
-              <div
-                className="tab-pane fade"
-                id="pills-notification"
-                role="tabpanel"
-                aria-labelledby="pills-notification-tab"
-                tabIndex={0}
-              >
-                <div className="form-switch switch-primary py-12 px-16 border radius-8 position-relative mb-16">
-                  <label
-                    htmlFor="companzNew"
-                    className="position-absolute w-100 h-100 start-0 top-0"
-                  />
-                  <div className="d-flex align-items-center gap-3 justify-content-between">
-                    <span className="form-check-label line-height-1 fw-medium text-secondary-light">
-                      Company News
-                    </span>
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      role="switch"
-                      id="companzNew"
-                    />
+
+                  {/* Confirm Password */}
+                  <div className="mb-20">
+                    <label
+                      htmlFor="confirmPassword"
+                      className="form-label fw-semibold text-primary-light text-sm mb-8"
+                    >
+                      Confirm Password{" "}
+                      <span className="text-danger-600">*</span>
+                    </label>
+                    <div className="position-relative">
+                      <input
+                        type={confirmPasswordVisible2 ? "text" : "password"}
+                        className="form-control radius-8"
+                        id="confirmPassword"
+                        name="confirmPassword"
+                        value={formData2.confirmPassword}
+                        onChange={handleChange2}
+                        placeholder="Confirm Password*"
+                      />
+                      <span
+                        className={`toggle-password ${
+                          confirmPasswordVisible2
+                            ? "ri-eye-off-line"
+                            : "ri-eye-line"
+                        } cursor-pointer position-absolute end-0 top-50 translate-middle-y me-16 text-secondary-light`}
+                        onClick={toggleConfirmPasswordVisibility3}
+                      ></span>
+                    </div>
+                    {errors2.confirmPassword && (
+                      <small className="text-danger">
+                        {errors2.confirmPassword}
+                      </small>
+                    )}
                   </div>
-                </div>
-                <div className="form-switch switch-primary py-12 px-16 border radius-8 position-relative mb-16">
-                  <label
-                    htmlFor="pushNotifcation"
-                    className="position-absolute w-100 h-100 start-0 top-0"
-                  />
-                  <div className="d-flex align-items-center gap-3 justify-content-between">
-                    <span className="form-check-label line-height-1 fw-medium text-secondary-light">
-                      Push Notification
-                    </span>
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      role="switch"
-                      id="pushNotifcation"
-                      defaultChecked=""
-                    />
-                  </div>
-                </div>
-                <div className="form-switch switch-primary py-12 px-16 border radius-8 position-relative mb-16">
-                  <label
-                    htmlFor="weeklyLetters"
-                    className="position-absolute w-100 h-100 start-0 top-0"
-                  />
-                  <div className="d-flex align-items-center gap-3 justify-content-between">
-                    <span className="form-check-label line-height-1 fw-medium text-secondary-light">
-                      Weekly News Letters
-                    </span>
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      role="switch"
-                      id="weeklyLetters"
-                      defaultChecked=""
-                    />
-                  </div>
-                </div>
-                <div className="form-switch switch-primary py-12 px-16 border radius-8 position-relative mb-16">
-                  <label
-                    htmlFor="meetUp"
-                    className="position-absolute w-100 h-100 start-0 top-0"
-                  />
-                  <div className="d-flex align-items-center gap-3 justify-content-between">
-                    <span className="form-check-label line-height-1 fw-medium text-secondary-light">
-                      Meetups Near you
-                    </span>
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      role="switch"
-                      id="meetUp"
-                    />
-                  </div>
-                </div>
-                <div className="form-switch switch-primary py-12 px-16 border radius-8 position-relative mb-16">
-                  <label
-                    htmlFor="orderNotification"
-                    className="position-absolute w-100 h-100 start-0 top-0"
-                  />
-                  <div className="d-flex align-items-center gap-3 justify-content-between">
-                    <span className="form-check-label line-height-1 fw-medium text-secondary-light">
-                      Orders Notifications
-                    </span>
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      role="switch"
-                      id="orderNotification"
-                      defaultChecked=""
-                    />
-                  </div>
-                </div>
+
+                  {/* Submit button */}
+                  <button type="submit" className="btn btn-primary radius-8">
+                    Change Password
+                  </button>
+                </form>
               </div>
             </div>
           </div>

@@ -8,6 +8,8 @@ const BASE_URL = process.env.REACT_APP_BASE_URL;
 console.log("base url", process.env.REACT_APP_BASE_URL);
 
 const CheckInComp = () => {
+  const token = localStorage.getItem("token");
+
   const [data, setData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [checkType, setCheckType] = useState("");
@@ -16,98 +18,22 @@ const CheckInComp = () => {
     page: 1,
     limit: 10,
     total: 0,
-    totalPages: 1,
+    totalPages: 0,
   });
-
-  // "inspectionId": "d6106d52-b76b-4195-a9d9-2656337b72c8",
-  //         "adminId": "93b535e1-e948-4644-a1ef-bd68a22282c1",
-  //         "inspectorId": null,
-  //         "clientId": "c697a43e-0f0b-4c7f-966b-596ef33f2c02",
-  //         "companyId": null,
-  //         "vehicleId": "fad0ba52-c586-4701-9d82-b3879a3ed8e0",
-  //         "carOwnerId": "c81b3d1f-a0d9-4962-92a8-5058856061d1",
-  //         "checkType": "check-in",
-  //         "checkInDate": "2025-08-27T05:49:28.291Z",
-  //         "checkOutDate": null,
-  //         "comments": "Vehicle returned with minor damages noted, photos and signatures updated.",
-  //         "createdAt": "2025-08-27T05:49:28.291Z",
-  //         "updatedAt": "2025-08-27T05:49:28.291Z",
-  //         "admin": {
-  //             "userId": "93b535e1-e948-4644-a1ef-bd68a22282c1",
-  //             "firstName": "rishu",
-  //             "lastName": "kumar",
-  //             "email": "rishu2@yopmail.com",
-  //             "isEmailVerified": true,
-  //             "profileImage": null,
-  //             "countryCode": "+91",
-  //             "phoneNumber": "9546456492",
-  //             "isPhoneNumberVerified": false,
-  //             "password": "$2b$10$O00YxfPzVmXaVUqHI9.ySe1QzdsNpGAmDEEy2c/HTahUEyFEgqxF.",
-  //             "address": null,
-  //             "gender": "MALE",
-  //             "role": "ADMIN",
-  //             "userType": "individual",
-  //             "isActive": true,
-  //             "termsAndConditions": true,
-  //             "companyId": null,
-  //             "createdAt": "2025-08-27T05:49:07.490Z",
-  //             "updatedAt": "2025-08-27T05:49:07.490Z"
-  //         },
-  //         "vehicle": {
-  //             "vehicleId": "fad0ba52-c586-4701-9d82-b3879a3ed8e0",
-  //             "adminId": "93b535e1-e948-4644-a1ef-bd68a22282c1",
-  //             "carOwnerId": null,
-  //             "numberPlate": "PB03BB2131",
-  //             "brand": "TOYOTA",
-  //             "model": "Corolla",
-  //             "mileage": 15200,
-  //             "gasType": "Petrol",
-  //             "gasLevel": "Half",
-  //             "tyresCondition": "Good",
-  //             "kmPerDay": 50,
-  //             "extraKm": 12,
-  //             "priceTotal": "12500.00",
-  //             "insuranceCertificate": null,
-  //             "checkList": {
-  //                 "0": "Lights",
-  //                 "1": "Horn",
-  //                 "2": "Wipers",
-  //                 "GPS": "true",
-  //                 "CarPapers": "true",
-  //                 "softyPack": "true",
-  //                 "spareWheels": "true",
-  //                 "chargingPort": "true"
-  //             },
-  //             "comments": "Minor scratch added during rental",
-  //             "createdAt": "2025-08-27T05:49:28.275Z",
-  //             "updatedAt": "2025-08-27T05:49:28.275Z"
-  //         },
-  //         "carOwner": {
-  //             "carOwnerId": "c81b3d1f-a0d9-4962-92a8-5058856061d1",
-  //             "adminId": "93b535e1-e948-4644-a1ef-bd68a22282c1",
-  //             "firstName": "John",
-  //             "lastName": "Doe",
-  //             "email": "johndoe@example.com",
-  //             "countryCode": "+91",
-  //             "phoneNumber": "9876543210",
-  //             "address": "123 Park Street, Delhi, India",
-  //             "gender": "MALE",
-  //             "checkList": [
-  //                 "ID Proof",
-  //                 "Address Proof"
-  //             ],
-  //             "createdAt": "2025-08-27T05:49:28.281Z",
-  //             "updatedAt": "2025-08-27T05:49:28.281Z"
-  //         }
 
   const getClientList = async (page = 1) => {
     try {
       const response = await axios.get(
         `${BASE_URL}/super-admin-pannel/check-in-inspections`,
         {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json", // ✅ correct for JSON body
+          },
           params: {
             page,
             limit: pagination.limit,
+            search: searchTerm || undefined,
             numberPlate: searchTerm || undefined, // backend expects numberPlate
             userType: userType || undefined, // backend expects userType
             checkType: checkType || undefined, // in case you want dynamic checkType
@@ -124,88 +50,27 @@ const CheckInComp = () => {
 
   // initial load
   useEffect(() => {
-    getClientList(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    getClientList(pagination.page, searchTerm);
+  }, [pagination.page, searchTerm]);
 
-  // trigger fetch when searchTerm or checkType changes
-  useEffect(() => {
-    getClientList(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm, checkType]);
-
-  // handle page change
-  const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= pagination.totalPages) {
-      getClientList(newPage);
+  // handle pagination click
+  const handlePageChange = (page) => {
+    if (page > 0 && page <= pagination.totalPages) {
+      setPagination((prev) => ({ ...prev, page }));
     }
   };
 
-  //   export default (sequelize, DataTypes) => {
-  //   const Company = sequelize.define(
-  //     "Company",
-  //     {
-  //       companyId: {
-  //         type: DataTypes.UUID,
-  //         primaryKey: true,
-  //         defaultValue: DataTypes.UUIDV4,
-  //       },
-  //       adminId: {
-  //         // adminId
-  //         type: DataTypes.UUID,
-  //         allowNull: false,
-  //         references: {
-  //           model: "Users",
-  //           key: "userId",
-  //         },
-  //       },
-  //       companyName: {
-  //         type: DataTypes.STRING,
-  //         allowNull: false,
-  //       },
-  //       website: {
-  //         type: DataTypes.STRING,
-  //         allowNull: false,
-  //         validate: {
-  //           isUrl: true,
-  //         },
-  //         unique: true,
-  //       },
-  //       VatNumber: {
-  //         type: DataTypes.STRING,
-  //         allowNull: false,
-  //         unique: true,
-  //       },
-  //       companyRegistrationNumber: {
-  //         type: DataTypes.STRING,
-  //         allowNull: false,
-  //         unique: true,
-  //       },
-  //       shareCapital: {
-  //         type: DataTypes.DECIMAL(15, 2),
-  //         allowNull: true,
-  //       },
-  //       termAndConditions: {
-  //         type: DataTypes.STRING,
-  //         allowNull: true,
-  //       },
-  //       companyPolicy: {
-  //         type: DataTypes.STRING,
-  //         allowNull: true,
-  //       },
-  //       companyLogo: {
-  //         type: DataTypes.STRING,
-  //         allowNull: true,
-  //       },
-  //       isActive: {
-  //         type: DataTypes.BOOLEAN,
-  //         defaultValue: true,
-  //       },
-  //     },
-  //     { timestamps: true }
-  //   );
-  //   return Company;
-  // };
+  function formatDateToDDMMYYYY(dateString) {
+    if (!dateString) return null;
+
+    const date = new Date(dateString);
+
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0"); // months are 0-based
+    const year = date.getFullYear();
+
+    return `${day}-${month}-${year}`;
+  }
 
   return (
     <div className="card h-100 p-0 radius-12">
@@ -228,20 +93,9 @@ const CheckInComp = () => {
         <div className="table-responsive scroll-sm">
           <table className="table bordered-table sm-table mb-0">
             <thead>
-              {/* <tr>
-                <th scope="col">#</th>
-
-                <th scope="col">Company Id</th>
-                <th scope="col">Company Name</th>
-                <th scope="col">Website</th>
-                <th scope="col">Vat Number</th>
-                <th scope="col">Company Registration Number</th>
-                <th scope="col">Share Capital</th>
-                <th scope="col">Company Logo</th>
-              </tr> */}
-
               <tr>
                 <th>Sr N°</th>
+                <th>Inspection Number</th>
                 <th>Number Plate</th>
                 <th>Date</th>
                 <th>Agent Name</th>
@@ -256,9 +110,13 @@ const CheckInComp = () => {
                 data?.map((item, index) => {
                   return (
                     <tr>
-                      <td>{index + 1}</td>
+                      <td>
+                        {(pagination.page - 1) * pagination.limit + index + 1}
+                      </td>
+                      <td>{item.inspectionNumber}</td>
+
                       <td>{item.vehicle.numberPlate}</td>
-                      <td>{item.vehicle.createdAt}</td>
+                      <td>{formatDateToDDMMYYYY(item.vehicle.createdAt)}</td>
                       <td>
                         {item.admin.firstName + " " + item.admin.lastName}
                       </td>

@@ -28,9 +28,19 @@ const DashBoardLayerTwo = () => {
   });
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
+
     const getData = async () => {
       try {
-        const res = await axios.get(BASE_URL + `/super-admin-pannel/dashboard`);
+        const res = await axios.get(
+          BASE_URL + `/super-admin-pannel/dashboard`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json", // ✅ correct for JSON body
+            },
+          }
+        );
 
         setData(res?.data?.data);
       } catch (error) {

@@ -9,6 +9,7 @@ const BASE_URL = process.env.REACT_APP_BASE_URL;
 console.log("base url", process.env.REACT_APP_BASE_URL);
 
 const DashBoardLayerThree = () => {
+  const token = localStorage.getItem("token");
   const [data, setData] = useState([]);
   const [pagination, setPagination] = useState({
     total: 0,
@@ -22,14 +23,23 @@ const DashBoardLayerThree = () => {
   // Fetch API with pagination, search, filter
   const getUserList = async (page = 1) => {
     try {
-      const response = await axios.get(BASE_URL + `/auth/userList`, {
-        params: {
-          page,
-          limit: pagination.limit,
-          search, // backend should handle search
-          role, // backend should handle filter
+      const response = await axios.get(
+        BASE_URL + `/auth/userList`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json", // ✅ correct for JSON body
+          },
         },
-      });
+        {
+          params: {
+            page,
+            limit: pagination.limit,
+            search, // backend should handle search
+            role, // backend should handle filter
+          },
+        }
+      );
 
       setData(response?.data?.users || []);
       setPagination(response?.data?.pagination || {});

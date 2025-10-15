@@ -8,6 +8,8 @@ const BASE_URL = process.env.REACT_APP_BASE_URL;
 console.log("base url", process.env.REACT_APP_BASE_URL);
 
 const NotificationLayer = () => {
+  const token = localStorage.getItem("token");
+
   const [data, setData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [checkType, setCheckType] = useState("");
@@ -16,7 +18,7 @@ const NotificationLayer = () => {
     page: 1,
     limit: 10,
     total: 0,
-    totalPages: 1,
+    totalPages: 0,
   });
 
   const getClientList = async (page = 1) => {
@@ -24,6 +26,10 @@ const NotificationLayer = () => {
       const response = await axios.get(
         `${BASE_URL}/super-admin-pannel/notifications`,
         {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json", // ✅ correct for JSON body
+          },
           params: {
             page,
             limit: pagination.limit,
@@ -41,17 +47,13 @@ const NotificationLayer = () => {
   };
 
   useEffect(() => {
-    getClientList(1);
-  }, []);
+    getClientList(pagination.page, searchTerm);
+  }, [pagination.page, searchTerm]);
 
-  useEffect(() => {
-    getClientList(1);
-  }, [searchTerm, checkType]);
-
-  // handle page change
-  const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= pagination.totalPages) {
-      getClientList(newPage);
+  // handle pagination click
+  const handlePageChange = (page) => {
+    if (page > 0 && page <= pagination.totalPages) {
+      setPagination((prev) => ({ ...prev, page }));
     }
   };
 
@@ -81,12 +83,12 @@ const NotificationLayer = () => {
             />
             <Icon icon="ion:search-outline" className="icon" />
           </form>
-          <Link to="/send-notification" className="btn btn-success">
+          <Link to="/send-notification" className="btn custum-btn-primary">
             Send Notifications To All User
           </Link>
           <Link
             to="/send-notification-on-sheduled-date"
-            className="btn btn-success"
+            className="btn custum-btn-primary"
           >
             Sheduled Notification To Send
           </Link>
@@ -113,7 +115,9 @@ const NotificationLayer = () => {
                 data.map((item, index) => {
                   return (
                     <tr key={index}>
-                      <td>{index + 1}</td>
+                      <td>
+                        {(pagination.page - 1) * pagination.limit + index + 1}
+                      </td>
                       <td>{item.type}</td>
                       <td>{formatDateToDDMMYYYY(item.createdAt)}</td>
                       <td>{item.title}</td>
