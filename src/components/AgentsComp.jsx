@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { Icon } from "@iconify/react";
+import Swal from "sweetalert2";
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
@@ -16,7 +17,7 @@ const AgentsComp = () => {
 
   const [pagination, setPagination] = useState({
     page: 1,
-    limit: 2,
+    limit: 10,
     total: 0,
     totalPages: 0,
   });
@@ -58,7 +59,34 @@ const AgentsComp = () => {
     }
   };
 
-  // handle page change
+  // handle page change block-inspector
+
+  const handleBlock = async (userId) => {
+    if (!userId) return;
+
+    try {
+      const response = await axios.put(
+        `${BASE_URL}/super-admin-pannel/block-inspector/${userId}`
+      );
+      console.log("User blocked:", response.data);
+
+      Swal.fire({
+        title: "Thank you!",
+        text: response?.data?.message,
+        icon: "success",
+      });
+      getClientList(pagination.page, searchTerm);
+    } catch (error) {
+      console.error("Error blocking user:", error);
+
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: error?.data?.message || "Something went wrong",
+      });
+      getClientList(pagination.page, searchTerm);
+    }
+  };
 
   return (
     <div className="card h-100 p-0 radius-12">
@@ -83,6 +111,8 @@ const AgentsComp = () => {
             <thead>
               <tr>
                 <th>Sr N°</th>
+                <th>AgentId</th>
+                <th>refCode</th>
                 <th>Date</th>
                 <th>Last Name</th>
                 <th>First Name</th>
@@ -90,7 +120,8 @@ const AgentsComp = () => {
                 <th>Mobile Number</th>
                 <th>Email</th>
                 <th>Address</th>
-                {/* <th className="text-center">Action</th> */}
+
+                <th className="text-center">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -99,6 +130,9 @@ const AgentsComp = () => {
                   return (
                     <tr>
                       <td>{index + 1}</td>
+                      <td>{item?.customInspectorId}</td>
+                      <td>{item?.refCode}</td>
+
                       <td>{item.createdAt}</td>
                       <td>{item.firstName}</td>
                       <td>{item.lastName}</td>
@@ -107,6 +141,17 @@ const AgentsComp = () => {
                       <td>{item.phoneNumber}</td>
                       <td>{item.email}</td>
                       <td>{item.address}</td>
+
+                      <td>
+                        <button
+                          type="button"
+                          // disabled={!user?.isActive}
+                          onClick={() => handleBlock(item?.adminId)}
+                          className="btn btn-sm custum-btn-primary"
+                        >
+                          {item?.isActive ? "Block" : "unBlock"}
+                        </button>
+                      </td>
                     </tr>
                   );
                 })

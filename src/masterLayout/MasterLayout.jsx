@@ -170,6 +170,12 @@ const MasterLayout = ({ children }) => {
             /> */}
 
             <img
+              src="assets/images/Auto-Proof-dark-logo.png"
+              alt="site logo"
+              className="dark-logo"
+            />
+
+            <img
               src="assets/images/auto-proof_logo.png"
               alt="site logo"
               className="light-logo"
@@ -225,20 +231,7 @@ const MasterLayout = ({ children }) => {
                     Company
                   </NavLink>
                 </li>
-                <li>
-                  <NavLink
-                    to="/rental-feet"
-                    className={(navData) =>
-                      navData.isActive ? "active-page" : ""
-                    }
-                  >
-                    <MdCarRental
-                      className="text-primary-600"
-                      style={{ fontSize: "20px" }}
-                    />
-                    Rental Fleet
-                  </NavLink>
-                </li>
+
                 <li>
                   <NavLink
                     to="/agents"
@@ -252,6 +245,21 @@ const MasterLayout = ({ children }) => {
                     />
                     {/* <i className="ri-circle-fill circle-icon text-primary-600 w-auto" />{" "} */}
                     Agents
+                  </NavLink>
+                </li>
+
+                <li>
+                  <NavLink
+                    to="/rental-feet"
+                    className={(navData) =>
+                      navData.isActive ? "active-page" : ""
+                    }
+                  >
+                    <MdCarRental
+                      className="text-primary-600"
+                      style={{ fontSize: "20px" }}
+                    />
+                    Rental Fleet
                   </NavLink>
                 </li>
                 {/* <li>
@@ -304,7 +312,7 @@ const MasterLayout = ({ children }) => {
                     Check-In
                   </NavLink>
                 </li>
-                <li>
+                {/* <li>
                   <NavLink
                     to="/complete-inspection"
                     className={(navData) =>
@@ -315,10 +323,10 @@ const MasterLayout = ({ children }) => {
                       className="text-primary-600"
                       style={{ fontSize: "20px" }}
                     />
-                    {/* <i className="ri-circle-fill circle-icon text-primary-600 w-auto" />{" "} */}
+                  
                     Complete Inspection
                   </NavLink>
-                </li>
+                </li> */}
               </ul>
             </li>
 
@@ -382,10 +390,13 @@ const MasterLayout = ({ children }) => {
 
             <li className="my-4">
               <NavLink
-                to="/subscriptions"
+                to="/add-subscription-plan"
                 className={(navData) => (navData.isActive ? "active-page" : "")}
               >
-                <MdSubscriptions icon="octicon:info-24" className="menu-icon" />
+                <MdOutlineSubscriptions
+                  icon="octicon:info-24"
+                  className="menu-icon"
+                />
                 <span>Subscription Management</span>
               </NavLink>
             </li>
@@ -400,6 +411,16 @@ const MasterLayout = ({ children }) => {
                   className="menu-icon"
                 />
                 <span>Ads Banner Management</span>
+              </NavLink>
+            </li>
+
+            <li className="my-4">
+              <NavLink
+                to="/add-coupon"
+                className={(navData) => (navData.isActive ? "active-page" : "")}
+              >
+                <MdSubscriptions icon="octicon:info-24" className="menu-icon" />
+                <span>Coupon Management</span>
               </NavLink>
             </li>
 

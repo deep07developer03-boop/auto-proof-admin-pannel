@@ -46,6 +46,12 @@ import PaymentTest from "./pages/PaymentTest";
 import PaymentSucces from "./pages/PaymentSucces";
 import PaymentCancel from "./pages/PaymentCancel";
 import ContactUs from "./pages/ContactUs";
+import AddCoupon from "./pages/AddCoupon";
+import UpdatePlan from "./pages/UpdatePlan";
+import ViewPlan from "./pages/ViewPlan";
+import UpdateSubscriptionPlan from "./pages/UpdateSubscriptionPlan";
+import ViewSubscriptionPlanComp from "./components/ViewSubscriptionPlanComp";
+import ViewSubscriptionPlan from "./pages/ViewSubscriptionPlan";
 
 function App() {
   return (
@@ -135,6 +141,14 @@ function App() {
           element={
             <ProtectedRoute>
               <HomePageNine />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/add-coupon"
+          element={
+            <ProtectedRoute>
+              <AddCoupon />
             </ProtectedRoute>
           }
         />
@@ -258,6 +272,23 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/update-subscription-plan/:planId"
+          element={
+            <ProtectedRoute>
+              <UpdateSubscriptionPlan />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/view-subscription-plan/:planId"
+          element={
+            <ProtectedRoute>
+              <ViewSubscriptionPlan />
+            </ProtectedRoute>
+          }
+        />
+
         <Route
           path="/edit-subscription-plan/:id"
           element={

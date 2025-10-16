@@ -3,6 +3,9 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import { Icon } from "@iconify/react";
 import { FaCircleUser } from "react-icons/fa6";
+import Swal from "sweetalert2";
+import { GrFormView } from "react-icons/gr";
+import { FaDownload } from "react-icons/fa6";
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
 console.log("base url", process.env.REACT_APP_BASE_URL);
@@ -72,6 +75,99 @@ const CheckInComp = () => {
     return `${day}-${month}-${year}`;
   }
 
+  const handleDownloadPdf = async (inspectionId) => {
+    const payload = {
+      checkType: "check-in",
+    };
+
+    try {
+      const response = await axios.post(
+        `${BASE_URL}/inspection/pdf/${inspectionId}`,
+        payload,
+        {
+          responseType: "blob", // Always keep blob for PDF
+        }
+      );
+
+      // Try to detect if it's JSON instead of PDF
+      const contentType = response.headers["content-type"];
+
+      if (contentType && contentType.includes("application/json")) {
+        // Convert blob back to JSON
+        const text = await response.data.text();
+        const json = JSON.parse(text);
+        console.error("❌ Error:", json.message);
+        alert(json.message); // or show in UI
+      } else {
+        // It's a PDF → download it
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", `inspection-${inspectionId}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      }
+    } catch (err) {
+      console.error("❌ Download failed:", err);
+
+      if (err.response && err.response.data) {
+        // Convert blob back to text, then parse JSON
+        err.response.data.text().then((text) => {
+          try {
+            const json = JSON.parse(text);
+            Swal.fire({
+              icon: "error",
+              title: "Oops...",
+              text: json.message || "Something went wrong",
+            });
+          } catch {
+            Swal.fire({
+              icon: "error",
+              title: "Oops...",
+              text: "Failed to download PDF",
+            });
+          }
+        });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: "Server error, please try again later",
+        });
+      }
+    }
+  };
+
+  const handleViewPdf = async (inspectionId) => {
+    const payload = {
+      checkType: "check-in",
+    };
+
+    try {
+      const response = await axios.put(
+        `${BASE_URL}/super-admin-pannel/view-inspection/${inspectionId}`,
+        payload
+      );
+
+      console.log("response of view inspection", response.data.data); // http://localhost:3002/reports/inspection_report_1758527664851.pdf
+
+      //   if (!pdfUrl) throw new Error("No PDF URL returned from server.");
+
+      // // Redirect the already-opened tab to the PDF
+      const pdfUrl = response?.data?.data;
+
+      if (!pdfUrl) {
+        throw new Error("No PDF URL returned from server.");
+      }
+
+      // Open PDF in a new tab
+      window.open(pdfUrl, "_blank", "noopener,noreferrer");
+      // Try to detect if it's JSON instead of PDF
+    } catch (err) {
+      console.error("❌ Download failed:", err);
+    }
+  };
   return (
     <div className="card h-100 p-0 radius-12">
       <div className="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center flex-wrap gap-3 justify-content-between">
@@ -99,7 +195,8 @@ const CheckInComp = () => {
                 <th>Number Plate</th>
                 <th>Date</th>
                 <th>Agent Name</th>
-                <th>User Type (Company, Individual, Fleet)</th>
+                <th>User Type</th>
+                <th>Download Inspection Pdf</th>
                 {/* <th className="text-center">Action</th> */}
               </tr>
             </thead>
@@ -121,6 +218,23 @@ const CheckInComp = () => {
                         {item.admin.firstName + " " + item.admin.lastName}
                       </td>
                       <td>{item.admin.userType}</td>
+                      <td class="d-flex align-item-center text-center">
+                        <GrFormView
+                          style={{ fontSize: "28px", cursor: "pointer" }}
+                          onClick={() => handleViewPdf(item?.inspectionId)}
+                        />
+                        <FaDownload
+                          style={{ fontSize: "21px", cursor: "pointer" }}
+                          onClick={() => handleDownloadPdf(item?.inspectionId)}
+                        />
+                        {/* <button
+                          type="button"
+                          className="btn custum-btn-primary btn-sm"
+                          onClick={() => handleDownloadPdf(item?.inspectionId)}
+                        >
+                          Download pdf
+                        </button> */}
+                      </td>
                     </tr>
                   );
                 })

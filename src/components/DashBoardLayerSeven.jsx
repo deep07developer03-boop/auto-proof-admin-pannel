@@ -3,6 +3,7 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import { Icon } from "@iconify/react";
 import { FaCircleUser } from "react-icons/fa6";
+import Swal from "sweetalert2";
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
@@ -17,7 +18,7 @@ const DashBoardLayerSeven = () => {
 
   const [pagination, setPagination] = useState({
     page: 1,
-    limit: 2,
+    limit: 10,
     total: 0,
     totalPages: 0,
   });
@@ -88,6 +89,35 @@ const DashBoardLayerSeven = () => {
     return `${day}-${month}-${year}`;
   }
 
+  const handleBlock = async (userId) => {
+    if (!userId) return;
+
+    try {
+      const response = await axios.put(
+        `${BASE_URL}/super-admin-pannel/block-company/${userId}`
+      );
+      console.log("User blocked:", response.data);
+
+      Swal.fire({
+        title: "Thank you!",
+        text: response?.data?.message,
+        icon: "success",
+      });
+
+      getClientList(pagination.page, searchTerm);
+    } catch (error) {
+      console.error("Error blocking user:", error);
+
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: error?.data?.message || "Something went wrong",
+      });
+
+      getClientList(pagination.page, searchTerm);
+    }
+  };
+
   return (
     <div className="card h-100 p-0 radius-12">
       <div className="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center flex-wrap gap-3 justify-content-between">
@@ -111,6 +141,7 @@ const DashBoardLayerSeven = () => {
             <thead>
               <tr>
                 <th>Sr N°</th>
+                <th>CompanyId</th>
                 <th>Date</th>
                 <th className="text-center">Profile Image</th>
                 <th>First Name</th>
@@ -121,11 +152,13 @@ const DashBoardLayerSeven = () => {
                 <th>Mobile Number</th>
                 <th>Email</th>
                 <th>Address</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody>
               {data.length > 0 ? (
                 data?.map((item, index) => {
+                  console.log("item", item);
                   return (
                     <tr key={index}>
                       {/* <td>{index + 1}</td> */}
@@ -133,7 +166,7 @@ const DashBoardLayerSeven = () => {
                       <td>
                         {(pagination.page - 1) * pagination.limit + index + 1}
                       </td>
-
+                      <td>{item?.customCompanyId}</td>
                       <td>{formatDateToDDMMYYYY(item.createdAt)}</td>
                       <td className="text-center">
                         {item.admin?.admin?.profileImage !== null ? (
@@ -156,6 +189,16 @@ const DashBoardLayerSeven = () => {
                       <td>{item.admin?.phoneNumber}</td>
                       <td>{item.admin?.email}</td>
                       <td>{item.admin?.address}</td>
+                      <td>
+                        <button
+                          type="button"
+                          // disabled={!user?.isActive}
+                          onClick={() => handleBlock(item?.adminId)}
+                          className="btn btn-sm custum-btn-primary"
+                        >
+                          {item?.isActive ? "Block" : "unBlock"}
+                        </button>
+                      </td>
                     </tr>
                   );
                 })

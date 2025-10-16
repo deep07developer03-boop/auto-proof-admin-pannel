@@ -427,7 +427,7 @@ const AddUserComp = () => {
                     </button>
                     <button
                       type="submit"
-                      className="btn btn-primary border border-primary-600 text-md px-56 py-12 radius-8"
+                      className="btn custum-btn-primary text-md px-56 py-12 radius-8"
                     >
                       Save
                     </button>

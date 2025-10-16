@@ -10,6 +10,7 @@ const BASE_URL = process.env.REACT_APP_BASE_URL;
 console.log("base url", process.env.REACT_APP_BASE_URL);
 
 const ViewPageComp = () => {
+  const token = localStorage.getItem("token");
   const [profileData, setProfileData] = useState("");
 
   const [imagePreview, setImagePreview] = useState(
@@ -42,11 +43,37 @@ const ViewPageComp = () => {
   useEffect(() => {
     const getProfileData = () => {
       axios
-        .get(BASE_URL + "/super-admin-pannel/profile")
+        .get(BASE_URL + "/super-admin-pannel/profile", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json", // ✅ correct for JSON body
+          },
+        })
         .then((response) => {
           console.log("response of profile", response.data.data);
 
           setProfileData(response?.data?.data);
+          setImagePreview(response?.data?.data?.profileImage);
+
+          setFormData({
+            firstName: response?.data?.data?.firstName,
+            lastName: response?.data?.data?.lastName,
+            email: response?.data?.data?.email,
+            isEmailVerified: response?.data?.data?.isEmailVerified,
+            profileImage: response?.data?.data?.profileImage,
+            countryCode: response?.data?.data?.countryCode,
+            phoneNumber: response?.data?.data?.phoneNumber,
+            isPhoneNumberVerified: response?.data?.data?.isPhoneNumberVerified,
+            password: response?.data?.data?.password,
+            address: response?.data?.data?.address,
+            gender: response?.data?.data?.gender,
+            // role: response?.data?.data?.role,
+            role: "",
+            userType: "individual",
+            isActive: true,
+            termsAndConditions: false,
+            companyId: response?.data?.data?.companyId,
+          });
         })
         .catch((error) => {
           console.log("error", error);
@@ -135,13 +162,33 @@ const ViewPageComp = () => {
   const handleSubmit = () => {
     // if (!validate()) return;
 
-    console.log("Form Data Submitted:", formData);
+    console.log("Form Data Submitted:", formData.profileImage);
 
+    const data = new FormData();
+
+    // Append text fields
+    data.append("firstName", formData.firstName);
+    data.append("lastName", formData.lastName);
+    data.append("email", formData.email);
+    data.append("countryCode", formData.countryCode);
+    data.append("phoneNumber", formData.phoneNumber);
+    data.append("gender", formData.gender);
+    data.append("role", "admin");
+    data.append("userType", formData.userType);
+    data.append("address", formData.address);
+    data.append("isActive", formData.isActive);
+    data.append("companyId", formData.companyId);
+
+    // Append file only if selected
+    if (formData.profileImage) {
+      data.append("profileImage", formData.profileImage);
+    }
+    console.log("Form Data Submitted:", formData.profileImage, data);
     axios
-      .post(BASE_URL + `/super-admin-pannel/update-profile`, formData, {
+      .post(BASE_URL + `/super-admin-pannel/update-profile`, data, {
         headers: {
-          Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImJkNmZhMWMxLTRhNzEtNGQyNi04ZDFjLWQxNzRkMjUzOTRmNCIsInJvbGUiOiJTVVBFUkFETUlOIiwiZW1haWwiOiJzdXBlcmFkbWluQHlvcG1haWwuY29tIiwiaWF0IjoxNzU2NDU5NTU2LCJleHAiOjE3NTY1NDU5NTZ9.OM2JAvJtT8c2tRmY1De0T7FgXhfU0KVQKr2KhNHNlR0`, // ✅ attach token here
-          "Content-Type": "multipart/form-data", // since you're sending formData
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data", // ✅ optional, axios can also auto-set it
         },
       })
       .then((response) => {
@@ -284,9 +331,9 @@ const ViewPageComp = () => {
           <div className="pb-24 ms-16 mb-24 me-16  mt--100">
             <div className="text-center border border-top-0 border-start-0 border-end-0">
               <img
-                src="https://cdn-icons-png.flaticon.com/512/3682/3682281.png"
+                src={imagePreview}
                 alt=""
-                className="border-3 border-black border-width-4-px w-200-px pb-3 h-200-px rounded-circle object-fit-cover"
+                className="border-3 border-black border-width-4-px w-200-px h-200-px rounded-circle object-fit-cover"
                 style={{
                   height: "130px",
                   width: "135px",
@@ -618,7 +665,7 @@ const ViewPageComp = () => {
                     </button>
                     <button
                       type="button"
-                      className="btn btn-primary border border-primary-600 text-md px-56 py-12 radius-8"
+                      className="btn custum-btn-primary  text-md px-56 py-12 radius-8"
                       onClick={handleSubmit}
                     >
                       Update
@@ -738,7 +785,10 @@ const ViewPageComp = () => {
                   </div>
 
                   {/* Submit button */}
-                  <button type="submit" className="btn btn-primary radius-8">
+                  <button
+                    type="submit"
+                    className="btn custum-btn-primary radius-8"
+                  >
                     Change Password
                   </button>
                 </form>

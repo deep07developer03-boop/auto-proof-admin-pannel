@@ -177,6 +177,7 @@ const DashBoardLayerNine = () => {
                     className="form-control"
                     value={formData.startDate}
                     onChange={handleChange}
+                    style={{ textTransform: "uppercase" }}
                   />
                   {errors.startDate && (
                     <small className="text-danger">{errors.startDate}</small>
@@ -193,6 +194,7 @@ const DashBoardLayerNine = () => {
                     className="form-control"
                     value={formData.endDate}
                     onChange={handleChange}
+                    style={{ textTransform: "uppercase" }}
                   />
                   {errors.endDate && (
                     <small className="text-danger">{errors.endDate}</small>

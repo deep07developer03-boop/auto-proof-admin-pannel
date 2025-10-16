@@ -330,6 +330,9 @@
   --neutral-900: #f5f6fa;
 }
 
+
+
+
 /* === reset css start === */
 /* === reset css start === */
 *:where(
@@ -3661,6 +3664,9 @@ html[data-theme="dark"] .dark-bg-neutral-200 {
   background-color: var(--neutral-200) !important;
 }
 
+html[data-theme="dark"] .card {
+  background-color: #273142 !important;
+}
 /* === bg css end === */
 /* === shadow css start === */
 .shadow-1 {

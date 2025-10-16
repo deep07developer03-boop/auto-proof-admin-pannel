@@ -3,6 +3,8 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import { Icon } from "@iconify/react";
 import { FaCircleUser } from "react-icons/fa6";
+import { GrFormView } from "react-icons/gr";
+import Swal from "sweetalert2";
 
 const BASE_URL = process.env.REACT_APP_BASE_URL;
 
@@ -72,6 +74,34 @@ const IndivisualUserComp = () => {
   }
 
   console.log("user", data);
+
+  const handleBlock = async (userId) => {
+    if (!userId) return;
+
+    try {
+      const response = await axios.put(
+        `${BASE_URL}/super-admin-pannel/block-user/${userId}`
+      );
+      console.log("User blocked:", response.data);
+
+      Swal.fire({
+        title: "Thank you!",
+        text: response?.data?.message,
+        icon: "success",
+      });
+      getUserList(pagination.page, search);
+    } catch (error) {
+      console.error("Error blocking user:", error);
+
+      Swal.fire({
+        icon: "error",
+        title: "Oops...",
+        text: error?.data?.message || "Something went wrong",
+      });
+      getUserList(pagination.page, search);
+    }
+  };
+
   return (
     <div className="card h-100 p-0 radius-12">
       <div className="card-header border-bottom bg-base py-16 px-24 d-flex align-items-center flex-wrap gap-3 justify-content-between">
@@ -106,6 +136,7 @@ const IndivisualUserComp = () => {
             <thead>
               <tr>
                 <th>Sr N°</th>
+                <th>UserId</th>
                 <th>Date</th>
                 <th className="text-center">Profile Image</th>
 
@@ -115,6 +146,7 @@ const IndivisualUserComp = () => {
                 <th>Mobile Number</th>
                 <th>Email</th>
                 <th>Address</th>
+                <th>Action</th>
               </tr>
             </thead>
             <tbody>
@@ -124,6 +156,7 @@ const IndivisualUserComp = () => {
                     <td>
                       {(pagination.page - 1) * pagination.limit + index + 1}
                     </td>
+                    <td>{user?.customUserId}</td>
                     <td>{formatDateToDDMMYYYY(user?.createdAt)}</td>
                     <td className="text-center">
                       {user.profileImage ? (
@@ -169,10 +202,19 @@ const IndivisualUserComp = () => {
 
                     <td>{user.gender}</td>
 
-                    <td>{user.mobileNumber ? user.mobileNumber : "-"}</td>
+                    <td>{user.phoneNumber ? user.phoneNumber : "-"}</td>
                     <td>{user.email}</td>
                     <td>{user.address ? user.address : "-"}</td>
-
+                    <td>
+                      <button
+                        type="button"
+                        // disabled={!user?.isActive}
+                        onClick={() => handleBlock(user?.userId)}
+                        className="btn btn-sm custum-btn-primary"
+                      >
+                        {user?.isActive ? "Block" : "unBlock"}
+                      </button>
+                    </td>
                     {/* <td className="text-center">
                       <span className="bg-success-focus text-success-600 px-24 py-4 radius-4 fw-medium text-sm">
                         {user.userType}

@@ -64,7 +64,6 @@ const Login = () => {
 
     if (validateForm()) {
       console.log("Login Data:", formData); // ✅ print data
-      alert("Login successful (check console for submitted data)");
 
       axios
         .post(BASE_URL + `/super-admin-pannel/login-super-admin`, {
